@@ -1,0 +1,11 @@
+9|OTA  | 07:35:14 [error] Update failed for device 3C8A1F3B3C44 {"service":"update-queue","error":"Unknown column 'is_cleared' in 'field list'","deviceId":"0d2f6bf4-00bb-4a98-b09b-4e3bbe2d713b","macAddress":"3C8A1F3B3C44","version":"v0.0.0"}
+9|OTA  | 07:35:14 [error] Rollback failed for device 3C8A1F3B3C44 {"service":"update-queue","error":"Unknown column 'is_cleared' in 'field list'","deviceId":"0d2f6bf4-00bb-4a98-b09b-4e3bbe2d713b","macAddress":"3C8A1F3B3C44"}
+9|OTA  | 07:35:14 [error] Failed to queue update {"service":"ota-server","macAddress":"3C8A1F3B3C44","version":"v0.0.0","error":"Unknown column 'is_cleared' in 'field list'"}
+9|OTA  | 07:35:14 [info] Deployment scheduled {"service":"ota-server","event":"deploy","deviceIds":["3C8A1F3B3C44"],"deviceCount":1,"version":"v0.0.0","scheduledBy":"admin"}
+9|OTA  | 07:35:14 [info] Deployment initiated {"service":"ota-server","deviceCount":1,"version":"v0.0.0","queueStatus":{"size":0,"pending":0,"activeUpdates":[]}}
+9|OTA  | 07:35:59 [info] Starting update for device 3C8A1F3B3C44 to version v1.0.1 {"service":"update-queue","deviceId":"0d2f6bf4-00bb-4a98-b09b-4e3bbe2d713b","macAddress":"3C8A1F3B3C44","version":"v1.0.1"}
+9|OTA  | 07:35:59 [error] Update failed for device 3C8A1F3B3C44 {"service":"update-queue","error":"Unknown column 'is_cleared' in 'field list'","deviceId":"0d2f6bf4-00bb-4a98-b09b-4e3bbe2d713b","macAddress":"3C8A1F3B3C44","version":"v1.0.1"}
+9|OTA  | 07:35:59 [error] Rollback failed for device 3C8A1F3B3C44 {"service":"update-queue","error":"Unknown column 'is_cleared' in 'field list'","deviceId":"0d2f6bf4-00bb-4a98-b09b-4e3bbe2d713b","macAddress":"3C8A1F3B3C44"}
+9|OTA  | 07:35:59 [error] Failed to queue update {"service":"ota-server","macAddress":"3C8A1F3B3C44","version":"v1.0.1","error":"Unknown column 'is_cleared' in 'field list'"}
+9|OTA  | 07:35:59 [info] Deployment scheduled {"service":"ota-server","event":"deploy","deviceIds":["3C8A1F3B3C44"],"deviceCount":1,"version":"v1.0.1","scheduledBy":"admin"}
+9|OTA  | 07:35:59 [info] Deployment initiated {"service":"ota-server","deviceCount":1,"version":"v1.0.1","queueStatus":{"size":0,"pending":0,"activeUpdates":[]}}
