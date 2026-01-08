@@ -1,0 +1,310 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+  
+  --color-sidebar: hsl(var(--sidebar));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  @keyframes accordion-down {
+    from { height: 0 }
+    to { height: var(--radix-accordion-content-height) }
+  }
+  @keyframes accordion-up {
+    from { height: var(--radix-accordion-content-height) }
+    to { height: 0 }
+  }
+}
+
+/* INDUSTRIAL TECH THEME - Light Mode Default */
+:root {
+  --background: 210 30% 98%; /* Slightly cooler grey */
+  --foreground: 210 20% 98%; 
+  
+  --card: 0 0% 100% / 0.1;
+  --card-foreground: 210 20% 98%;
+  
+  --popover: 0 0% 100% / 0.8;
+  --popover-foreground: 210 20% 98%;
+  
+  --primary: 210 20% 98%;
+  --primary-foreground: 222 47% 12%;
+  
+  --secondary: 210 15% 94% / 0.1;
+  --secondary-foreground: 210 20% 98%;
+  
+  --muted: 210 20% 96% / 0.1;
+  --muted-foreground: 210 20% 80%;
+  
+  --accent: 217 91% 60%; /* Vibrant Tech Blue */
+  --accent-foreground: 0 0% 100%;
+  
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+
+  --border: 220 15% 92% / 0.5;
+  --input: 220 15% 92% / 0.5;
+  --ring: 217 91% 60%;
+  
+  --radius: 1rem; /* Slightly more rounded for apple feel */
+
+  --sidebar: 222 47% 11% / 0.8;
+  --sidebar-foreground: 210 20% 90%;
+  --sidebar-primary: 217 91% 60%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 222 47% 15% / 0.5;
+  --sidebar-accent-foreground: 210 20% 95%;
+  --sidebar-border: 222 47% 15% / 0.5;
+  --sidebar-ring: 217 91% 60%;
+  
+  --chart-1: 217 91% 60%;
+  --chart-2: 160 60% 45%;
+  --chart-3: 38 92% 50%;
+  --chart-4: 262 83% 58%;
+  --chart-5: 0 84% 60%;
+
+  --glass-blur: 12px;
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+}
+
+.dark {
+  --background: 222 47% 4%; /* Near black with blue tint */
+  --foreground: 210 20% 98%;
+  
+  --card: 222 47% 7% / 0.4;
+  --card-foreground: 210 20% 98%;
+  
+  --popover: 222 47% 7% / 0.8;
+  --popover-foreground: 210 20% 98%;
+  
+  --primary: 210 20% 98%;
+  --primary-foreground: 222 47% 4%;
+  
+  --secondary: 222 47% 12% / 0.5;
+  --secondary-foreground: 210 20% 98%;
+  
+  --muted: 222 47% 12% / 0.5;
+  --muted-foreground: 215 20% 65%;
+  
+  --accent: 217 91% 60%;
+  --accent-foreground: 0 0% 100%;
+  
+  --destructive: 0 62% 30%;
+  --destructive-foreground: 0 0% 98%;
+  
+  --border: 222 47% 12% / 0.5;
+  --input: 222 47% 12% / 0.5;
+  --ring: 217 91% 60%;
+  
+  --sidebar: 222 47% 4% / 0.7;
+  --sidebar-foreground: 210 20% 90%;
+  --sidebar-primary: 217 91% 60%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 222 47% 10% / 0.5;
+  --sidebar-accent-foreground: 210 20% 95%;
+  --sidebar-border: 222 47% 10% / 0.5;
+  --sidebar-ring: 217 91% 60%;
+
+  --glass-border: rgba(255, 255, 255, 0.05);
+}
+
+@layer utilities {
+  .glassmorphism {
+    @apply backdrop-blur-[var(--glass-blur)] border-white/20 dark:border-white/5;
+    background: hsl(var(--card) / 0.6);
+    box-shadow: var(--glass-shadow);
+  }
+
+  .loader {
+    width: 20px;
+    aspect-ratio: 1;
+    
+    /* Glassmorphic look */
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 6px;
+
+    /* Monochrome glow */
+    box-shadow: 0 0 60px 15px rgba(255, 255, 255, 0.25);
+
+    transform: translate(-80px);
+    clip-path: inset(0);
+
+    animation:
+      l4-1 0.5s ease-in-out infinite alternate,
+      l4-2 1s ease-in-out infinite;
+  }
+
+  @keyframes l4-1 {
+    100% { transform: translateX(80px); }
+  }
+
+  @keyframes l4-2 {
+    33% { clip-path: inset(0 0 0 -100px); }
+    50% { clip-path: inset(0 0 0 0); }
+    83% { clip-path: inset(0 -100px 0 0); }
+  }
+
+  /* Glassmorphic Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html, body {
+    @apply bg-slate-950;
+  }
+  body {
+    @apply font-sans antialiased text-foreground min-h-screen;
+    background: transparent !important;
+  }
+}
+
+/* Light theme override */
+.light-theme {
+  --background: 0 0% 98%;
+  --foreground: 222 47% 11%;
+  
+  --card: 0 0% 100% / 0.9;
+  --card-foreground: 222 47% 11%;
+  
+  --popover: 0 0% 100% / 0.95;
+  --popover-foreground: 222 47% 11%;
+  
+  --primary: 222 47% 11%;
+  --primary-foreground: 0 0% 100%;
+  
+  --secondary: 210 20% 96%;
+  --secondary-foreground: 222 47% 11%;
+  
+  --muted: 210 20% 96%;
+  --muted-foreground: 215 16% 47%;
+  
+  --accent: 217 91% 60%;
+  --accent-foreground: 0 0% 100%;
+  
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 217 91% 60%;
+  
+  --sidebar: 0 0% 100% / 0.9;
+  --sidebar-foreground: 222 47% 11%;
+  --sidebar-primary: 217 91% 60%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 210 20% 96%;
+  --sidebar-accent-foreground: 222 47% 11%;
+  --sidebar-border: 214 32% 91%;
+  --sidebar-ring: 217 91% 60%;
+}
+
+.light-theme .text-white {
+  color: hsl(222 47% 11%) !important;
+}
+
+.light-theme .text-white\/60,
+.light-theme .text-white\/40,
+.light-theme .text-white\/50 {
+  color: hsl(215 16% 47%) !important;
+}
+
+.light-theme .bg-white\/5,
+.light-theme .bg-white\/10,
+.light-theme .bg-white\/15 {
+  background-color: hsl(210 20% 96%) !important;
+}
+
+.light-theme .border-white\/10,
+.light-theme .border-white\/20 {
+  border-color: hsl(214 32% 91%) !important;
+}
