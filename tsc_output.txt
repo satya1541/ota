@@ -1,0 +1,5 @@
+client/src/components/LeafletDeviceMap.tsx(140,36): error TS2694: Namespace '"D:/project/ota-master/node_modules/@types/leaflet/index"' has no exported member 'MarkerClusterGroup'.
+client/src/components/LeafletDeviceMap.tsx(149,28): error TS2339: Property 'markerClusterGroup' does not exist on type 'typeof import("D:/project/ota-master/node_modules/@types/leaflet/index")'.
+client/src/components/LeafletDeviceMap.tsx(154,28): error TS7006: Parameter 'cluster' implicitly has an 'any' type.
+server/routes.ts(649,29): error TS2341: Property 'broadcastToDevice' is private and only accessible within class 'WebSocketManager'.
+server/routes.ts(675,31): error TS2339: Property 'broadcastToConsole' does not exist on type 'WebSocketManager'.
