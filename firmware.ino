@@ -1,4 +1,5 @@
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <HTTPClient.h>
 #include <HTTPUpdate.h>
 #include <ArduinoJson.h> // Install via Library Manager: "ArduinoJson" by Benoit Blanchon
@@ -11,9 +12,10 @@ const char* SSID = "YOUR_WIFI_SSID";
 const char* PASSWORD = "YOUR_WIFI_PASSWORD";
 
 // 2. Server Configuration
-// REPLACE with your computer's local IP address (e.g., 192.168.1.100) if running locally
-const char* SERVER_HOST = "192.168.1.100"; 
-const int SERVER_PORT = 5000;
+// Using your production domain
+const char* SERVER_HOST = "ota.thynxai.cloud"; 
+const int SERVER_PORT = 443;  // HTTPS port
+const bool USE_HTTPS = true;  // Enable HTTPS
 
 // 3. Device Identity
 String macAddress; // Will be read from hardware
@@ -39,10 +41,11 @@ String getMacAddress() {
 void sendHeartbeat() {
   if (WiFi.status() != WL_CONNECTED) return;
 
-  WiFiClient client;
+  WiFiClientSecure client;
+  client.setInsecure(); // Skip certificate validation (for testing)
   HTTPClient http;
 
-  String url = "http://" + String(SERVER_HOST) + ":" + String(SERVER_PORT) + "/api/devices/" + macAddress + "/heartbeat";
+  String url = "https://" + String(SERVER_HOST) + "/api/devices/" + macAddress + "/heartbeat";
   
   StaticJsonDocument<200> doc;
   doc["uptime"] = millis() / 1000;
@@ -72,10 +75,11 @@ void checkForUpdates() {
 
   Serial.println("[OTA] Checking for updates...");
   
-  WiFiClient client;
+  WiFiClientSecure client;
+  client.setInsecure(); // Skip certificate validation (for testing)
   HTTPClient http;
 
-  String url = "http://" + String(SERVER_HOST) + ":" + String(SERVER_PORT) + "/api/ota/check?deviceId=" + macAddress + "&currentVersion=" + FIRMWARE_VERSION;
+  String url = "https://" + String(SERVER_HOST) + "/api/ota/check?deviceId=" + macAddress + "&currentVersion=" + FIRMWARE_VERSION;
 
   http.begin(client, url);
   int httpCode = http.GET();
@@ -91,7 +95,7 @@ void checkForUpdates() {
       String updateUrl = doc["url"].as<String>();
       // If URL is relative, prepend server host
       if (updateUrl.startsWith("/")) {
-        updateUrl = "http://" + String(SERVER_HOST) + ":" + String(SERVER_PORT) + updateUrl;
+        updateUrl = "https://" + String(SERVER_HOST) + updateUrl;
       }
       
       Serial.printf("[OTA] Update available! Downloading from: %s\n", updateUrl.c_str());
@@ -212,9 +216,9 @@ void setup() {
   // 3. Register Device (Optional - usually done via heartbeats implicitly or admin UI)
   // For this firmware, we'll just start sending heartbeats.
 
-  // 4. Init WebSocket
+  // 4. Init WebSocket (Secure WSS)
   Serial.println("[WS] Connecting to server...");
-  webSocket.begin(SERVER_HOST, SERVER_PORT, "/ws");
+  webSocket.beginSSL(SERVER_HOST, SERVER_PORT, "/ws");
   webSocket.onEvent(webSocketEvent);
   webSocket.setReconnectInterval(5000);
   
