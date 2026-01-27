@@ -182,7 +182,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         return res.status(401).json({ error: "Invalid PIN" });
       }
 
-      logger.info('User logged in', { userId: user.id });
+
       res.json({ user: { id: user.id, username: user.username } });
     } catch (error) {
       logger.error('Login error', { error: error instanceof Error ? error.message : 'Unknown error' });

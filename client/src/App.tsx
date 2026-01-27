@@ -15,9 +15,7 @@ const Dashboard = lazy(() => import("@/pages/dashboard"));
 const Devices = lazy(() => import("@/pages/devices"));
 const Firmware = lazy(() => import("@/pages/firmware"));
 const Logs = lazy(() => import("@/pages/logs"));
-const Overview = lazy(() => import("@/pages/overview"));
 const FleetMap = lazy(() => import("@/pages/fleet-map"));
-const AuditTrail = lazy(() => import("@/pages/audit-trail"));
 const Login = lazy(() => import("@/pages/login"));
 const Register = lazy(() => import("@/pages/register"));
 const NotFound = lazy(() => import("@/pages/not-found"));
@@ -50,9 +48,7 @@ function AppShell() {
                 <Route path="/devices" component={Devices} />
                 <Route path="/firmware" component={Firmware} />
                 <Route path="/logs" component={Logs} />
-                <Route path="/overview" component={Overview} />
                 <Route path="/fleet-map" component={FleetMap} />
-                <Route path="/audit-trail" component={AuditTrail} />
                 <Route component={NotFound} />
               </Switch>
             </Suspense>

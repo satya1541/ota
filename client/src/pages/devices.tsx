@@ -59,6 +59,7 @@ import {
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogTitle,
+  AlertDialogHeader,
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -594,6 +595,7 @@ export default function Devices() {
   const [editingDevice, setEditingDevice] = useState<Device | null>(null);
   // Delete dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [rollbackDialogOpen, setRollbackDialogOpen] = useState(false);
   const [deviceToDelete, setDeviceToDelete] = useState<Device | null>(null);
 
   useEffect(() => {
@@ -1017,14 +1019,14 @@ export default function Devices() {
                   </Button>
                   <Button
                     onClick={() => {
-                      selectedDevices.forEach((mac) => rollbackMutation.mutate(mac));
+                      setRollbackDialogOpen(true);
                     }}
                     disabled={rollbackMutation.isPending}
-                    className="h-10 flex-1 md:flex-initial px-3 rounded-xl bg-rose-500 hover:bg-rose-400 text-white transition-all active:scale-95 shadow-[0_0_20px_rgba(244,63,94,0.4)] border-none"
+                    className="h-10 flex-1 md:flex-initial px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black transition-all active:scale-95 shadow-[0_0_20px_rgba(245,158,11,0.4)] border-none"
                     title={t('devices.rollback', { count: selectedDevices.length })}
                   >
                     <HistoryIcon className="h-4 w-4" />
-                    <span className="hidden sm:inline ml-2 text-[10px] font-black uppercase tracking-widest">{t('common.action')}</span>
+                    <span className="hidden sm:inline ml-2 text-[10px] font-black uppercase tracking-widest">ROLLBACK</span>
                   </Button>
                   <Button
                     onClick={() => setDeployDialogOpen(true)}
@@ -1228,7 +1230,7 @@ export default function Devices() {
         <AlertDialogContent className="rounded-2xl border-none ring-1 ring-border/50 shadow-2xl bg-background max-w-[550px] p-6">
           <AlertDialogTitle className="font-black text-foreground">Delete {selectedDevices.length} Devices?</AlertDialogTitle>
           <AlertDialogDescription className="text-sm text-foreground/60">
-            This action cannot be undone. These devices will be permanently removed from the fleet.
+            This action cannot be undone. These devices will be permanently removed from the device registry.
           </AlertDialogDescription>
 
           <div className="space-y-3 pt-2">
@@ -1254,6 +1256,42 @@ export default function Devices() {
               className="bg-rose-500/80 hover:bg-rose-500 text-foreground rounded-xl shadow-lg shadow-rose-500/20 px-6 border-none transition-all hover-elevate disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {bulkDeleteMutation.isPending ? t('devices.deleting') : `Delete ${selectedDevices.length} Devices`}
+            </Button>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Rollback Confirmation Dialog */}
+      <AlertDialog open={rollbackDialogOpen} onOpenChange={setRollbackDialogOpen}>
+        <AlertDialogContent className="rounded-2xl border-none ring-1 ring-border/50 shadow-2xl bg-background max-w-[550px] p-6">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-black text-foreground">
+              {selectedDevices.length === 1
+                ? `Rollback ${devices.find(d => d.macAddress === selectedDevices[0])?.name || 'Device'}?`
+                : `Rollback ${selectedDevices.length} Devices?`
+              }
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-sm text-foreground/60">
+              {(() => {
+                const targets = devices.filter(d => selectedDevices.includes(d.macAddress));
+                const names = targets.map(d => d.name).join(", ");
+                const versions = targets.map(d => d.previousVersion || "unknown version").join(", ");
+                return `Are you sure you want to rollback ${names} to ${targets.length === 1 ? 'its' : 'their'} previous firmware version (${versions})? This action may interrupt current operations.`;
+              })()}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex gap-2 justify-end pt-4">
+            <AlertDialogCancel className="rounded-xl border-none ring-1 ring-border/50 bg-white/5 text-foreground/70 hover:bg-accent/10 hover:text-foreground transition-all">
+              {t('common.cancel')}
+            </AlertDialogCancel>
+            <Button
+              onClick={() => {
+                selectedDevices.forEach((mac) => rollbackMutation.mutate(mac));
+                setRollbackDialogOpen(false);
+              }}
+              className="bg-amber-500 hover:bg-amber-400 text-black rounded-xl shadow-lg shadow-amber-500/20 px-6 border-none transition-all hover-elevate"
+            >
+              Confirm Rollback
             </Button>
           </div>
         </AlertDialogContent>

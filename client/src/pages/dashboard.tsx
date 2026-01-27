@@ -11,6 +11,9 @@ import { subDays, format, isSameDay, subHours } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { Loader } from "@/components/loader";
+import { lazy, Suspense } from "react";
+
+const DeploymentAnalytics = lazy(() => import("@/components/DeploymentAnalytics").then(mod => ({ default: mod.DeploymentAnalytics })));
 
 // Animation Variants
 const container = {
@@ -145,17 +148,15 @@ export default function Dashboard() {
         animate="show"
         className="space-y-6"
       >
+        <motion.div variants={item}>
+          <Suspense fallback={<div className="h-64 flex items-center justify-center bg-card border border-border/50 rounded-3xl backdrop-blur-md shadow-xl"><Loader /></div>}>
+            <DeploymentAnalytics />
+          </Suspense>
+        </motion.div>
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 relative z-10">
-          <motion.div variants={item}>
 
-            <div className="flex items-center gap-2 mt-2">
-              <div className="h-2 w-2 bg-emerald-500 animate-pulse rounded-none" />
-              <p className="text-emerald-500/80 text-xs font-mono tracking-[0.2em] uppercase">
-                SYSTEM_STATUS::OPTIMAL
-              </p>
-            </div>
-          </motion.div>
+
 
           <motion.div variants={item} className="flex gap-2">
             {quickActions.map((action, i) => (

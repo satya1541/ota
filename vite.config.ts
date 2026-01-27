@@ -104,10 +104,12 @@ export default defineConfig({
   server: {
     host: "0.0.0.0",
     allowedHosts: true,
-    hmr: {
-      protocol: "wss",
-      clientPort: 443,
-    },
+    hmr: process.env.REPL_ID
+      ? {
+          protocol: "wss",
+          clientPort: 443,
+        }
+      : true,
     fs: {
       strict: true,
       deny: ["**/.*"],

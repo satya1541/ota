@@ -3,18 +3,46 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, AlertTriangle, CircleCheck, Info, Search, Pause, Play, ScrollText, CloudDownload } from "lucide-react";
+import {
+  FileDown,
+  FileText,
+  SlidersHorizontal,
+  ShieldCheck,
+  UserCircle,
+  CalendarDays,
+  Globe2,
+  ChevronDown,
+  ChevronUp,
+  RefreshCcw,
+  AlertTriangle,
+  Info,
+  Microchip,
+  Package,
+  Rocket,
+  Trash,
+  CloudUpload,
+  RotateCcw,
+  Search,
+  X,
+  ScrollText,
+  Pause,
+  Play,
+  CircleCheck,
+  AlertCircle,
+  CloudDownload
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { logsApi, deviceApi, DeviceLog, Device } from "@/lib/api";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { logsApi, deviceApi, auditApi, DeviceLog, Device, AuditLog } from "@/lib/api";
 import { format } from "date-fns";
 import { useSearch } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { generateLogsPDF } from "@/lib/pdf-generator";
+import { generateLogsPDF, generateAuditLogsPDF } from "@/lib/pdf-generator";
+import { Label } from "@/components/ui/label";
 
 const container = {
   hidden: { opacity: 0 },
@@ -29,13 +57,153 @@ const item = {
   show: { y: 0, opacity: 1 }
 };
 
+const actionIcons: Record<string, any> = {
+  create: Microchip,
+  delete: Trash,
+  upload: CloudUpload,
+  deploy: Rocket,
+  rollback: RotateCcw,
+  update: Package,
+};
+
+const severityColors: Record<string, string> = {
+  info: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+  warning: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
+  critical: "bg-red-500/20 text-red-400 border-red-500/30",
+};
+
+const entityColors: Record<string, string> = {
+  device: "bg-cyan-500/20 text-cyan-400",
+  firmware: "bg-purple-500/20 text-purple-400",
+  deployment: "bg-green-500/20 text-green-400",
+  rollout: "bg-orange-500/20 text-orange-400",
+  config: "bg-pink-500/20 text-pink-400",
+};
+
+function StatCard({ title, value, icon: Icon, color }: { title: string; value: number; icon: any; color: string }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={`relative overflow-hidden rounded-xl border ${color} p-4`}
+    >
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm text-foreground/60">{title}</p>
+          <p className="text-2xl font-bold text-foreground">{value.toLocaleString()}</p>
+        </div>
+        <Icon className="h-8 w-8 opacity-50" />
+      </div>
+    </motion.div>
+  );
+}
+
+function AuditLogRow({ log, expanded, onToggle }: { log: AuditLog; expanded: boolean; onToggle: () => void }) {
+  const { t } = useTranslation();
+  const Icon = actionIcons[log.action] || Info;
+  const details = log.details ? (() => { try { return JSON.parse(log.details); } catch { return null; } })() : null;
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      className="border-b border-border/50 last:border-0"
+    >
+      <div
+        onClick={onToggle}
+        className="flex items-center gap-4 p-4 cursor-pointer bg-accent/5 transition-colors"
+      >
+        <div className={`p-2 rounded-lg ${entityColors[log.entityType] || 'bg-gray-500/20 text-gray-400'}`}>
+          <Icon className="h-4 w-4" />
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-semibold text-foreground capitalize">{t(`audit_trail.${log.action}`)}</span>
+            <Badge variant="outline" className={entityColors[log.entityType] || ''}>
+              {t(`audit_trail.${log.entityType}`)}
+            </Badge>
+            {log.entityName && (
+              <span className="text-foreground/60 truncate">{log.entityName}</span>
+            )}
+          </div>
+          <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <UserCircle className="h-3 w-3" />
+              {log.userName || t('audit_trail.system')}
+            </span>
+            <span className="flex items-center gap-1">
+              <CalendarDays className="h-3 w-3" />
+              {new Date(log.createdAt).toLocaleString()}
+            </span>
+            {log.ipAddress && (
+              <span className="flex items-center gap-1">
+                <Globe2 className="h-3 w-3" />
+                {log.ipAddress}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <Badge variant="outline" className={severityColors[log.severity || 'info']}>
+          {log.severity === 'critical' && <AlertTriangle className="h-3 w-3 mr-1" />}
+          {t(`audit_trail.${log.severity || 'info'}`)}
+        </Badge>
+
+        <Button variant="ghost" size="icon" className="h-8 w-8 text-foreground">
+          {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        </Button>
+      </div>
+
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-4 pl-14">
+              <div className="bg-background/50 rounded-lg p-3 font-mono text-xs text-foreground/70">
+                {details ? (
+                  <pre className="whitespace-pre-wrap break-all">{JSON.stringify(details, null, 2)}</pre>
+                ) : (
+                  <span className="text-muted-foreground italic">{t('audit_trail.no_details')}</span>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
 export default function Logs() {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const searchString = useSearch();
   const urlParams = new URLSearchParams(searchString);
   const urlSearch = urlParams.get("search") || "";
 
   const [autoRefreshLogs, setAutoRefreshLogs] = useState(true);
+
+  // OTA Activity State
+  const [searchTerm, setSearchTerm] = useState(urlSearch);
+  const [actionFilter, setActionFilter] = useState("all");
+  const [isExporting, setIsExporting] = useState(false);
+
+  // Audit Trail State
+  const [auditActionFilter, setAuditActionFilter] = useState<string>("");
+  const [auditEntityFilter, setAuditEntityFilter] = useState<string>("");
+  const [auditSeverityFilter, setAuditSeverityFilter] = useState<string>("");
+  const [auditSearchQuery, setAuditSearchQuery] = useState<string>("");
+  const [auditStartDate, setAuditStartDate] = useState<string>("");
+  const [auditEndDate, setAuditEndDate] = useState<string>("");
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [isExportingCsv, setIsExportingCsv] = useState(false);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
 
   const { data: devices = [] } = useQuery({
     queryKey: ["devices"],
@@ -48,9 +216,97 @@ export default function Logs() {
     refetchInterval: autoRefreshLogs ? 3000 : false,
   });
 
-  const [searchTerm, setSearchTerm] = useState(urlSearch);
-  const [actionFilter, setActionFilter] = useState("all");
-  const [isExporting, setIsExporting] = useState(false);
+  // Audit Trail Queries
+  const { data: auditLogs = [], isLoading: isLoadingAudit, refetch: refetchAudit, isFetching: isFetchingAudit } = useQuery({
+    queryKey: ['audit-logs', auditActionFilter, auditEntityFilter, auditStartDate, auditEndDate],
+    queryFn: () => auditApi.getLogs({
+      action: auditActionFilter || undefined,
+      entityType: auditEntityFilter || undefined,
+      startDate: auditStartDate || undefined,
+      endDate: auditEndDate || undefined,
+      limit: 500,
+    }),
+    refetchInterval: 30000,
+  });
+
+  const { data: auditStats } = useQuery({
+    queryKey: ['audit-logs-stats'],
+    queryFn: () => auditApi.getStats(),
+    refetchInterval: 60000,
+  });
+
+  // Audit Trail filtering
+  const filteredAuditLogs = auditLogs.filter(log => {
+    if (auditSeverityFilter && (log.severity || 'info') !== auditSeverityFilter) return false;
+    if (auditSearchQuery) {
+      const query = auditSearchQuery.toLowerCase();
+      const matchesAction = log.action.toLowerCase().includes(query);
+      const matchesEntity = log.entityType.toLowerCase().includes(query);
+      const matchesEntityName = log.entityName?.toLowerCase().includes(query);
+      const matchesUser = log.userName?.toLowerCase().includes(query);
+      const matchesDetails = log.details?.toLowerCase().includes(query);
+      if (!matchesAction && !matchesEntity && !matchesEntityName && !matchesUser && !matchesDetails) return false;
+    }
+    return true;
+  });
+
+  const handleExportCsv = async () => {
+    setIsExportingCsv(true);
+    try {
+      const url = auditApi.exportCsv({ startDate: auditStartDate, endDate: auditEndDate });
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to export CSV');
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = `audit-logs-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(downloadUrl);
+      toast.success('CSV exported successfully');
+    } catch (error) {
+      toast.error('Failed to export CSV');
+      console.error(error);
+    } finally {
+      setIsExportingCsv(false);
+    }
+  };
+
+  const handleExportPdf = async () => {
+    if (filteredAuditLogs.length === 0) {
+      toast.error('No logs to export');
+      return;
+    }
+    setIsExportingPdf(true);
+    try {
+      generateAuditLogsPDF(filteredAuditLogs);
+      toast.success('PDF exported successfully');
+    } catch (error) {
+      toast.error('Failed to generate PDF');
+      console.error(error);
+    } finally {
+      setIsExportingPdf(false);
+    }
+  };
+
+  const handleRefreshAudit = () => {
+    refetchAudit();
+    queryClient.invalidateQueries({ queryKey: ['audit-logs-stats'] });
+    toast.success('Audit logs refreshed');
+  };
+
+  const clearAuditFilters = () => {
+    setAuditActionFilter("");
+    setAuditEntityFilter("");
+    setAuditSeverityFilter("");
+    setAuditSearchQuery("");
+    setAuditStartDate("");
+    setAuditEndDate("");
+  };
+
+  const hasAuditFilters = auditActionFilter || auditEntityFilter || auditSeverityFilter || auditSearchQuery || auditStartDate || auditEndDate;
 
   useEffect(() => {
     if (urlSearch) setSearchTerm(urlSearch);
@@ -123,6 +379,10 @@ export default function Logs() {
             <TabsTrigger value="activity" className="rounded-xl px-8 data-[state=active]:bg-foreground/10 data-[state=active]:text-foreground data-[state=active]:shadow-lg transition-all">
               <ScrollText className="h-4 w-4 mr-2" />
               {t('logs.ota_activity')}
+            </TabsTrigger>
+            <TabsTrigger value="audit" className="rounded-xl px-8 data-[state=active]:bg-foreground/10 data-[state=active]:text-foreground data-[state=active]:shadow-lg transition-all">
+              <ShieldCheck className="h-4 w-4 mr-2" />
+              {t('audit_trail.title')}
             </TabsTrigger>
           </TabsList>
 
@@ -252,6 +512,200 @@ export default function Logs() {
                 </CardContent>
               </Card>
             </motion.div >
+          </TabsContent >
+
+          <TabsContent value="audit" className="mt-8">
+            <motion.div variants={item} className="space-y-6">
+              {/* Audit Header */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+                    <ShieldCheck className="h-5 w-5 text-primary shadow-sm" />
+                    {t('audit_trail.header')}
+                  </h2>
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRefreshAudit}
+                    disabled={isFetchingAudit}
+                    className="gap-2 rounded-xl bg-background/50 border-border/50"
+                  >
+                    <RefreshCcw className={`h-4 w-4 ${isFetchingAudit ? 'animate-spin' : ''}`} />
+                    {t('audit_trail.refresh')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleExportCsv}
+                    disabled={isExportingCsv || filteredAuditLogs.length === 0}
+                    className="gap-2 rounded-xl bg-background/50 border-border/50"
+                  >
+                    <FileDown className="h-4 w-4" />
+                    {isExportingCsv ? t('audit_trail.exporting') : t('audit_trail.export_csv')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleExportPdf}
+                    disabled={isExportingPdf || filteredAuditLogs.length === 0}
+                    className="gap-2 rounded-xl bg-background/50 border-border/50"
+                  >
+                    <FileText className="h-4 w-4" />
+                    {isExportingPdf ? t('audit_trail.generating') : t('audit_trail.export_pdf')}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Audit Stats */}
+              {auditStats && (
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <StatCard
+                    title={t('audit_trail.total_events')}
+                    value={auditStats.totalLogs}
+                    icon={ShieldCheck}
+                    color="border-blue-500/30 bg-blue-500/10"
+                  />
+                  <StatCard
+                    title={t('audit_trail.devices')}
+                    value={auditStats.byEntityType?.device || 0}
+                    icon={Microchip}
+                    color="border-cyan-500/30 bg-cyan-500/10"
+                  />
+                  <StatCard
+                    title={t('audit_trail.firmware')}
+                    value={auditStats.byEntityType?.firmware || 0}
+                    icon={Package}
+                    color="border-purple-500/30 bg-purple-500/10"
+                  />
+                  <StatCard
+                    title={t('audit_trail.warnings')}
+                    value={(auditStats.bySeverity?.warning || 0) + (auditStats.bySeverity?.critical || 0)}
+                    icon={AlertTriangle}
+                    color="border-yellow-500/30 bg-yellow-500/10"
+                  />
+                </div>
+              )}
+
+              {/* Audit Filters */}
+              <Card className="border-none shadow-xl ring-1 ring-border/50 rounded-3xl bg-card/90">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-foreground flex items-center gap-2 text-sm font-bold uppercase tracking-wider">
+                    <SlidersHorizontal className="h-4 w-4" />
+                    {t('audit_trail.filters')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="lg:col-span-1">
+                      <Label className="text-foreground/60 text-[10px] font-bold uppercase tracking-widest mb-1.5 block">{t('audit_trail.search')}</Label>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          value={auditSearchQuery}
+                          onChange={(e) => setAuditSearchQuery(e.target.value)}
+                          placeholder={t('audit_trail.search_logs')}
+                          className="h-10 border-none bg-background/80 ring-1 ring-border/50 rounded-xl pl-9"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-foreground/60 text-[10px] font-bold uppercase tracking-widest mb-1.5 block">{t('audit_trail.action')}</Label>
+                      <Select value={auditActionFilter || "all"} onValueChange={(v) => setAuditActionFilter(v === "all" ? "" : v)}>
+                        <SelectTrigger className="h-10 border-none bg-background/80 ring-1 ring-border/50 rounded-xl">
+                          <SelectValue placeholder={t('audit_trail.all_actions')} />
+                        </SelectTrigger>
+                        <SelectContent className="bg-black border-border/50 text-foreground">
+                          <SelectItem value="all">{t('audit_trail.all_actions')}</SelectItem>
+                          <SelectItem value="create">{t('audit_trail.create')}</SelectItem>
+                          <SelectItem value="delete">{t('audit_trail.delete')}</SelectItem>
+                          <SelectItem value="upload">{t('audit_trail.upload')}</SelectItem>
+                          <SelectItem value="deploy">{t('audit_trail.deploy')}</SelectItem>
+                          <SelectItem value="rollback">{t('audit_trail.rollback')}</SelectItem>
+                          <SelectItem value="update">{t('audit_trail.update')}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-foreground/60 text-[10px] font-bold uppercase tracking-widest mb-1.5 block">{t('audit_trail.entity_type')}</Label>
+                      <Select value={auditEntityFilter || "all"} onValueChange={(v) => setAuditEntityFilter(v === "all" ? "" : v)}>
+                        <SelectTrigger className="h-10 border-none bg-background/80 ring-1 ring-border/50 rounded-xl">
+                          <SelectValue placeholder={t('audit_trail.all_types')} />
+                        </SelectTrigger>
+                        <SelectContent className="bg-black border-border/50 text-foreground">
+                          <SelectItem value="all">{t('audit_trail.all_types')}</SelectItem>
+                          <SelectItem value="device">{t('audit_trail.device')}</SelectItem>
+                          <SelectItem value="firmware">{t('audit_trail.firmware')}</SelectItem>
+                          <SelectItem value="deployment">{t('audit_trail.deployment')}</SelectItem>
+                          <SelectItem value="rollout">{t('audit_trail.rollout')}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-foreground/60 text-[10px] font-bold uppercase tracking-widest mb-1.5 block">{t('audit_trail.severity')}</Label>
+                      <Select value={auditSeverityFilter || "all"} onValueChange={(v) => setAuditSeverityFilter(v === "all" ? "" : v)}>
+                        <SelectTrigger className="h-10 border-none bg-background/80 ring-1 ring-border/50 rounded-xl">
+                          <SelectValue placeholder={t('audit_trail.all_severities')} />
+                        </SelectTrigger>
+                        <SelectContent className="bg-black border-border/50 text-foreground">
+                          <SelectItem value="all">{t('audit_trail.all_severities')}</SelectItem>
+                          <SelectItem value="info">{t('audit_trail.info')}</SelectItem>
+                          <SelectItem value="warning">{t('audit_trail.warning')}</SelectItem>
+                          <SelectItem value="critical">{t('audit_trail.critical')}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  {hasAuditFilters && (
+                    <div className="mt-4 flex justify-end">
+                      <Button variant="ghost" onClick={clearAuditFilters} size="sm" className="text-foreground/60 gap-2 h-8 rounded-xl hover:bg-foreground/5 transition-all">
+                        <X className="h-4 w-4" />
+                        {t('audit_trail.clear_all_filters')}
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Audit List */}
+              <Card className="border-none shadow-xl ring-1 ring-border/50 rounded-3xl overflow-hidden bg-card/90">
+                <CardHeader>
+                  <CardTitle className="text-lg font-black tracking-tight text-foreground flex items-center justify-between">
+                    <span>{t('audit_trail.activity_log')}</span>
+                    {isFetchingAudit && (
+                      <span className="text-xs text-muted-foreground font-normal flex items-center gap-1">
+                        <RefreshCcw className="h-3 w-3 animate-spin" />
+                        {t('audit_trail.updating')}
+                      </span>
+                    )}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  {isLoadingAudit ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
+                    </div>
+                  ) : filteredAuditLogs.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                      <ShieldCheck className="h-12 w-12 mb-4 opacity-50" />
+                      <p className="text-xs font-bold uppercase tracking-widest">{t('audit_trail.no_logs_found')}</p>
+                    </div>
+                  ) : (
+                    <div className="max-h-[600px] overflow-y-auto custom-scrollbar">
+                      {filteredAuditLogs.map((log) => (
+                        <AuditLogRow
+                          key={log.id}
+                          log={log}
+                          expanded={expandedId === log.id}
+                          onToggle={() => setExpandedId(expandedId === log.id ? null : log.id)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
           </TabsContent >
         </Tabs >
       </motion.div >

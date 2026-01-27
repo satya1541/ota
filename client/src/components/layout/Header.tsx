@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { BellRing, CircleCheck, AlertCircle, CloudDownload, Rocket, RotateCcw, Microchip, Package, ScrollText, Languages, Check, LogOut, Sun, Moon, LayoutGrid, ShieldCheck, TrendingUp, Globe2 } from "lucide-react";
+import { BellRing, CircleCheck, AlertCircle, CloudDownload, Rocket, RotateCcw, Microchip, Package, ScrollText, Languages, Check, LogOut, Sun, Moon, LayoutGrid, Globe2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/lib/theme";
 import logoGif from "@assets/output-onlinegiftools_(1)_1768286854333.gif";
@@ -73,8 +73,6 @@ const NAV_ITEMS = [
   { href: "/devices", labelKey: "nav.devices", icon: Microchip },
   { href: "/firmware", labelKey: "nav.firmware", icon: Package },
   { href: "/logs", labelKey: "nav.logs", icon: ScrollText },
-  { href: "/audit-trail", labelKey: "nav.audit_trail", icon: ShieldCheck },
-  { href: "/overview", labelKey: "nav.overview", icon: TrendingUp },
   { href: "/fleet-map", labelKey: "nav.fleet_map", icon: Globe2 },
 ];
 
@@ -152,7 +150,7 @@ export function Header() {
                 className={cn(
                   "flex items-center gap-2 px-3 py-1.5 rounded-xl cursor-pointer transition-all",
                   isActive
-                    ? "bg-accent/10 text-accent ring-1 ring-accent/20"
+                    ? "bg-primary/10 text-primary ring-1 ring-primary/20 shadow-[0_0_10px_rgba(0,240,255,0.15)]"
                     : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
                 )}
               >

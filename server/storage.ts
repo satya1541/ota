@@ -119,19 +119,5 @@ export interface IStorage {
   markDeviceCheckedIn(macAddress: string): Promise<void>;
 }
 
-// Helper type for InsertAuditLog
-export interface InsertAuditLogData {
-  userId?: string | null;
-  userName?: string | null;
-  action: string;
-  entityType: string;
-  entityId?: string | null;
-  entityName?: string | null;
-  details?: string | null;
-  ipAddress?: string | null;
-  userAgent?: string | null;
-  severity?: string | null;
-}
-
 // Use database storage
 export const storage: IStorage = new DbStorage("");

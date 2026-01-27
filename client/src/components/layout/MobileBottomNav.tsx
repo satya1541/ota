@@ -6,7 +6,6 @@ import {
   Microchip,
   Package,
   ScrollText,
-  TrendingUp,
 } from "lucide-react";
 
 export function MobileBottomNav() {
@@ -17,7 +16,6 @@ export function MobileBottomNav() {
     { href: "/devices", label: "Devices", icon: Microchip },
     { href: "/firmware", label: "Firmware", icon: Package },
     { href: "/logs", label: "Logs", icon: ScrollText },
-    { href: "/overview", label: "Analytics", icon: TrendingUp },
   ];
 
   return (
@@ -29,7 +27,7 @@ export function MobileBottomNav() {
       <div className="relative flex items-center justify-around px-2 py-2 pb-[env(safe-area-inset-bottom,8px)]">
         {navItems.map((item) => {
           const isActive = location === item.href ||
-            (item.href === "/overview" && ["/overview", "/fleet-map", "/audit-trail"].includes(location));
+            (item.href === "/logs" && ["/logs", "/fleet-map"].includes(location));
 
           return (
             <Link key={item.href} href={item.href}>
