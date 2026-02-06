@@ -626,3 +626,14 @@
 {"intervalMs":60000,"level":"info","message":"Starting rollback protection watchdog","service":"ota-server","timestamp":"2026-01-27 12:24:06"}
 {"level":"info","message":"12:24:07 PM [express] serving on port 5000","service":"ota-server","timestamp":"2026-01-27 12:24:07"}
 {"environment":"development","level":"info","message":"OTA Server started","port":5000,"service":"ota-server","timestamp":"2026-01-27 12:24:07"}
+{"intervalMs":60000,"level":"info","message":"Starting rollback protection watchdog","service":"ota-server","timestamp":"2026-02-06 16:53:38"}
+{"error":"Unknown database 'ota_db'","level":"error","message":"Rollback watchdog check failed","service":"ota-server","timestamp":"2026-02-06 16:53:39"}
+{"level":"info","message":"4:53:42 PM [express] serving on port 5000","service":"ota-server","timestamp":"2026-02-06 16:53:42"}
+{"environment":"development","level":"info","message":"OTA Server started","port":5000,"service":"ota-server","timestamp":"2026-02-06 16:53:42"}
+{"error":"Unknown database 'ota_db'","level":"error","message":"Rollback watchdog check failed","service":"ota-server","timestamp":"2026-02-06 16:54:38"}
+{"error":"Unknown database 'ota_db'","level":"error","message":"Rollback watchdog check failed","service":"ota-server","timestamp":"2026-02-06 16:55:38"}
+{"level":"info","message":"Initializing DB storage with Host: 40.192.42.60, Port: 3306, User: testing, DB: ota_db ","service":"ota-server","timestamp":"2026-02-06 16:58:22"}
+{"intervalMs":60000,"level":"info","message":"Starting rollback protection watchdog","service":"ota-server","timestamp":"2026-02-06 16:58:22"}
+{"level":"info","message":"4:58:23 PM [express] serving on port 5000","service":"ota-server","timestamp":"2026-02-06 16:58:23"}
+{"environment":"development","level":"info","message":"OTA Server started","port":5000,"service":"ota-server","timestamp":"2026-02-06 16:58:23"}
+{"intervalMs":60000,"level":"info","message":"Starting rollback protection watchdog","service":"ota-server","timestamp":"2026-02-06 17:11:00"}

@@ -120,7 +120,7 @@ export const otaProgressSchema = z.object({
 });
 
 // Auth validation schemas
-// Auth validation schemas
+
 export const loginSchema = z.object({
   pin: z.string().length(4, "PIN must be 4 digits").regex(/^\d+$/, "PIN must contain only numbers"),
 });

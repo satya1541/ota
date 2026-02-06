@@ -65,7 +65,7 @@ export class DbStorage implements IStorage {
 
   async createUser(insertUser: { username: string; pin: string; email?: string; password?: string }): Promise<User> {
     await this.db.insert(users).values({
-      email: insertUser.email || `user-${Date.now()}@example.com`,
+      email: insertUser.email || `user - ${Date.now()} @example.com`,
       username: insertUser.username,
       password: insertUser.password || "legacy_placeholder",
       pin: insertUser.pin,
@@ -193,7 +193,7 @@ export class DbStorage implements IStorage {
     let logs;
     if (deviceId) {
       logs = await this.db.select().from(deviceLogs)
-        .where(sql`${deviceLogs.deviceId} = ${deviceId} AND (${deviceLogs.isCleared} IS NULL OR ${deviceLogs.isCleared} = 0)`)
+        .where(sql`${deviceLogs.deviceId} = ${deviceId} AND(${deviceLogs.isCleared} IS NULL OR ${deviceLogs.isCleared} = 0)`)
         .orderBy(desc(deviceLogs.createdAt));
     } else {
       logs = await this.db.select().from(deviceLogs)
