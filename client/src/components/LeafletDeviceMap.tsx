@@ -115,13 +115,30 @@ function createColoredIcon(color: string, isSelected: boolean = false, status: s
 // Component to fit map bounds to markers
 function FitBounds({ devices }: { devices: Device[] }) {
   const map = useMap();
+  const lastBoundsRef = useRef<string>("");
 
   useEffect(() => {
     if (devices.length > 0) {
       const bounds = L.latLngBounds(
         devices.map(d => [parseFloat(d.latitude!), parseFloat(d.longitude!)])
       );
-      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
+
+      const boundsStr = bounds.toBBoxString();
+      if (boundsStr === lastBoundsRef.current) return;
+      lastBoundsRef.current = boundsStr;
+
+      // Wrap in requestAnimationFrame to ensure map is ready
+      const timeout = setTimeout(() => {
+        if (map) {
+          try {
+            map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15, animate: true });
+          } catch (e) {
+            console.warn("Leaflet fitBounds error:", e);
+          }
+        }
+      }, 100);
+
+      return () => clearTimeout(timeout);
     }
   }, [devices, map]);
 
@@ -139,43 +156,9 @@ function MarkerClusterGroup({ devices, onDeviceClick, selectedDeviceId, getStatu
   const map = useMap();
   const clusterGroupRef = useRef<any>(null);
 
-  useEffect(() => {
-    // Remove existing cluster group
-    if (clusterGroupRef.current) {
-      map.removeLayer(clusterGroupRef.current);
-    }
-
-    // Create new cluster group
-    const clusterGroup = (L as any).markerClusterGroup({
-      chunkedLoading: true,
-      spiderfyOnMaxZoom: true,
-      showCoverageOnHover: false,
-      maxClusterRadius: 50,
-      iconCreateFunction: (cluster: any) => {
-        const count = cluster.getChildCount();
-        return L.divIcon({
-          html: `<div style="
-            background-color: #8b5cf6;
-            color: white;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 14px;
-            border: 3px solid white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-          ">${count}</div>`,
-          className: "custom-cluster-icon",
-          iconSize: L.point(40, 40),
-        });
-      },
-    });
-
-    // Add markers to cluster group
-    devices.forEach(device => {
+  // Create markers list to avoid re-creation on every render if not needed
+  const markers = useMemo(() => {
+    return devices.map(device => {
       const lat = parseFloat(device.latitude!);
       const lng = parseFloat(device.longitude!);
       const color = getStatusColor(device);
@@ -185,7 +168,6 @@ function MarkerClusterGroup({ devices, onDeviceClick, selectedDeviceId, getStatu
         icon: createColoredIcon(color, isSelected, device.otaStatus || device.status),
       });
 
-      // Create tooltip content (shows on hover)
       const tooltipContent = `
         <div style="min-width: 220px; font-family: system-ui, sans-serif; padding: 4px;">
           <h4 style="margin: 0 0 8px 0; font-weight: 600; font-size: 14px;">${device.name || device.macAddress}</h4>
@@ -223,7 +205,6 @@ function MarkerClusterGroup({ devices, onDeviceClick, selectedDeviceId, getStatu
         </div>
       `;
 
-      // Bind tooltip for hover (instead of popup for click)
       marker.bindTooltip(tooltipContent, {
         permanent: false,
         direction: 'top',
@@ -232,20 +213,74 @@ function MarkerClusterGroup({ devices, onDeviceClick, selectedDeviceId, getStatu
         className: 'device-tooltip',
       });
 
-      marker.on("click", () => onDeviceClick(device));
+      marker.on("click", (e) => {
+        L.DomEvent.stopPropagation(e);
+        onDeviceClick(device);
+      });
 
-      clusterGroup.addLayer(marker);
+      return marker;
+    });
+  }, [devices, selectedDeviceId, getStatusColor, t, onDeviceClick]);
+
+  useEffect(() => {
+    if (!map) return;
+
+    // Remove existing cluster group
+    if (clusterGroupRef.current) {
+      try {
+        clusterGroupRef.current.clearLayers();
+        map.removeLayer(clusterGroupRef.current);
+      } catch (e) {
+        console.warn("Leaflet removeLayer error:", e);
+      }
+    }
+
+    // Create new cluster group
+    const clusterGroup = (L as any).markerClusterGroup({
+      chunkedLoading: true,
+      spiderfyOnMaxZoom: true,
+      showCoverageOnHover: false,
+      maxClusterRadius: 50,
+      iconCreateFunction: (cluster: any) => {
+        const count = cluster.getChildCount();
+        return L.divIcon({
+          html: `<div style="
+            background-color: #8b5cf6;
+            color: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            border: 3px solid white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+          ">${count}</div>`,
+          className: "custom-cluster-icon",
+          iconSize: L.point(40, 40),
+        });
+      },
     });
 
+    clusterGroup.addLayers(markers);
     map.addLayer(clusterGroup);
     clusterGroupRef.current = clusterGroup;
 
     return () => {
-      if (clusterGroupRef.current) {
-        map.removeLayer(clusterGroupRef.current);
+      if (clusterGroupRef.current && map) {
+        try {
+          if (map.hasLayer(clusterGroupRef.current)) {
+            clusterGroupRef.current.clearLayers();
+            map.removeLayer(clusterGroupRef.current);
+          }
+        } catch (e) {
+          console.warn("Leaflet cleanup error:", e);
+        }
       }
     };
-  }, [devices, map, onDeviceClick, selectedDeviceId, getStatusColor, t]);
+  }, [markers, map]);
 
   return null;
 }
