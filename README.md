@@ -92,17 +92,18 @@ A robust, full-stack Over-The-Air (OTA) update solution designed for ESP32 IoT f
 
 ## 🏗 System Architecture
 
-The platform follows a classic three-tier architecture with a specialized IoT communication layer.
+The platform follows a classic three-tier architecture with a specialized IoT communication layer, optimized for high-contrast visibility and industrial-grade telemetry.
 
 ```mermaid
 graph TD
     subgraph Client_Layer["Frontend (React)"]
-        UI["Dashboard UI"]
-        WS_C["WebSocket Client (Logs/Console)"]
+        UI["Neo-Brutalist Dashboard"]
+        CS["Card Stack Prefs Modal"]
+        INDICATOR["Activity Indicators (Animations)"]
     end
 
     subgraph Server_Layer["Backend (Express/Node.js)"]
-        API["REST API (Auth, CRUD, OTA Check)"]
+        API["REST API (Auth, OTA, Telemetry)"]
         WS_S["WebSocket Server (ws)"]
         UQ["Update Queue (Concurrency)"]
         WD["Rollback Watchdog"]
@@ -114,39 +115,43 @@ graph TD
     end
 
     subgraph Device_Layer["IoT Devices (ESP32)"]
-        ESP["ESP32 Firmware"]
-        HU["HTTPUpdate Library"]
+        ESP["ESP32 Firmware (v0.0.1+)"]
+        REP["Reporting Engine (Progress/Result)"]
+        POLL["Fallback Polling Client"]
     end
 
     UI <--> API
     UI <--> WS_S
+    CS --> API
     API <--> DB
     API <--> FS
     API <--> UQ
     UQ <--> WD
     WD <--> DB
     
-    ESP -- REST/Heartbeat --> API
-    ESP -- WebSocket/Commands --> WS_S
+    ESP -- POST /ota/heartbeat --> API
+    ESP -- WS / Remote Commands --> WS_S
+    ESP -- POST /ota/progress --> API
     ESP -- Binary Download --> API
+    POLL -- GET /ota/commands --> API
 ```
 
 ### Component Breakdown
 
 | Component | Responsibility |
 | :--- | :--- |
-| **Frontend UI** | Admin administration, firmware management, rollout monitoring, and remote console. |
-| **REST API** | Handles device registration, heartbeats, OTA polling (`/ota/check`), and firmware uploads. |
-| **WebSocket Server** | Real-time bi-directional channel for streaming device logs and sending instant commands (Reboot, Reset). |
+| **Neo-Brutalist UI** | High-contrast admin administration, firmware management, and live activity animations. |
+| **REST API** | Handles device registration, heartbeats (`/ota/heartbeat`), OTA checks (`/ota/check`), and progress tracking. |
+| **WebSocket Server** | Real-time bi-directional channel for instant commands (Reboot, Reset) and live metrics. |
 | **Update Queue** | Manages thousands of devices by queuing update requests to prevent server/network congestion. |
-| **Rollback Watchdog** | Monitors devices after an update. If a device fails to check back in within a timeout, it marks it as "At Risk" or initiates a rollback. |
-| **Drizzle ORM** | Provides type-safe access to the MySQL database for device status, firmware metadata, and audit logs. |
+| **Rollback Watchdog** | Monitors devices after an update; initiates rollback if heartbeats fail to resume. |
+| **Reporting Engine** | Firmware-side logic for real-time progress updates and success/failure outcome reporting. |
 
 ---
 
 ## 🔄 OTA Update Lifecycle
 
-The following sequence diagram illustrates the complete flow from firmware upload to successful deployment.
+The following sequence illustrates the modernized flow including real-time progress and post-update reporting.
 
 ```mermaid
 sequenceDiagram
@@ -159,34 +164,36 @@ sequenceDiagram
     Note over A, S: 1. Firmware Ingestion
     A->>S: Upload Firmware (version, .bin)
     S->>S: Calculate SHA256 Checksum
-    S->>DB: Store Metadata & File Path
+    S->>DB: Store Metadata
     S-->>A: Upload Confirmed
 
     Note over A, S: 2. Deployment Trigger
     A->>S: Initiate Deployment (Group/List, Version)
-    S->>DB: Update device targetVersion
+    S->>DB: Set targetVersion
     S->>S: Queue Updates (UpdateQueue)
 
-    Note over S, D: 3. Notification & Discovery
-    alt Active Update (WebSocket)
-        S->>D: Send 'command: update' via WS
-    else Polling Update (HTTP)
-        D->>S: GET /ota/check?v=current
+    Note over S, D: 3. Discovery Phase
+    alt WebSocket (Push)
+        S->>D: { type: 'command', command: 'update' }
+    else HTTP Polling (Pull)
+        D->>S: GET /ota/check?deviceId=MAC&v=current
         S-->>D: { updateAvailable: true, url: ..., checksum: ... }
     end
 
     Note over D, S: 4. Flashing Phase
     D->>S: GET /firmware/binary.bin
-    S-->>D: Stream File
+    loop Streaming
+        S-->>D: Binary Chunks
+        D->>S: POST /ota/progress (percentage%)
+    end
     D->>D: Verify Checksum
-    D->>D: Write to Flash (OTA Partition)
-    D->>S: POST /ota/command/report (Success)
+    D->>S: POST /ota/report (updated/success)
     D->>D: Reboot
 
-    Note over D, S: 5. Verification Phase (Watchdog)
-    D->>S: POST /api/devices/heartbeat (v=new)
+    Note over D, S: 5. Final Verification
+    D->>S: POST /ota/heartbeat (v=new)
     S->>DB: Update currentVersion, clear targetVersion
-    S->>S: Mark update as 'Successful' in Analytics
+    S->>S: Clear rollback timer
 ```
 
 ### Reliability Mechanisms
