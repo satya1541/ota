@@ -2,8 +2,9 @@ import { storage } from './storage';
 import logger from './logger';
 import PQueue from 'p-queue';
 
-// For p-queue v6, the default export is the constructor.
-const ResolvedPQueue: any = PQueue;
+// For p-queue v6, handle the case where the constructor is either the default 
+// export directly or nested under a .default property (due to transpilation).
+const ResolvedPQueue: any = (PQueue as any).default ?? PQueue;
 
 interface UpdateTask {
   deviceId: string;
@@ -19,7 +20,7 @@ class UpdateQueueManager {
 
   constructor() {
     try {
-      this.queue = new ResolvedPQueue({ 
+      this.queue = new ResolvedPQueue({
         concurrency: 5,
         timeout: 300000
       });
@@ -27,7 +28,7 @@ class UpdateQueueManager {
       logger.error('Failed to initialize p-queue', { error: err instanceof Error ? err.message : String(err) });
       throw new Error('Failed to initialize update queue');
     }
-    
+
     this.activeUpdates = new Map();
     this.updateHistory = new Map();
   }
@@ -92,7 +93,7 @@ class UpdateQueueManager {
    */
   private async executeUpdate(deviceId: string, macAddress: string, version: string): Promise<void> {
     this.activeUpdates.set(macAddress, true);
-    
+
     let device;
     let previousState: any = null;
 
@@ -197,7 +198,7 @@ class UpdateQueueManager {
     } finally {
       // Always remove from active updates
       this.activeUpdates.delete(macAddress);
-      
+
       // Clean up old history entries (older than 1 hour)
       const oneHourAgo = Date.now() - 3600000;
       Array.from(this.updateHistory.entries()).forEach(([mac, update]) => {
