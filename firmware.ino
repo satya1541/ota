@@ -12,15 +12,14 @@ const char* SSID = "YOUR_WIFI_SSID";
 const char* PASSWORD = "YOUR_WIFI_PASSWORD";
 
 // 2. Server Configuration
-// Using your production domain
 const char* SERVER_HOST = "ota.thynxai.cloud"; 
-const int SERVER_PORT = 443;  // HTTPS port
-const bool USE_HTTPS = true;  // Enable HTTPS
+const int SERVER_PORT = 443;  
+const bool USE_HTTPS = true;
 
 // 3. Device Identity
-String macAddress; // Will be read from hardware
+String macAddress; 
 String deviceName = "ESP32-Device";
-const char* FIRMWARE_VERSION = "0.0.1"; // Initial version
+const char* FIRMWARE_VERSION = "0.0.1"; 
 
 // =================GLOBALS=================
 
@@ -28,7 +27,9 @@ WebSocketsClient webSocket;
 unsigned long lastHeartbeat = 0;
 const unsigned long HEARTBEAT_INTERVAL = 30000; // 30 seconds
 unsigned long lastOtaCheck = 0;
-const unsigned long OTA_CHECK_INTERVAL = 60000 * 60; // Check every hour (or manually triggers)
+const unsigned long OTA_CHECK_INTERVAL = 60000 * 60; // 1 hour
+unsigned long lastCommandPoll = 0;
+const unsigned long COMMAND_POLL_INTERVAL = 15000; // 15 seconds fallback
 
 // =================HELPER FUNCTIONS=================
 
@@ -38,20 +39,97 @@ String getMacAddress() {
   return mac;
 }
 
+// Function to read internal temperature (ESP32 specific)
+float getInternalTemp() {
+  // Built-in temp sensor is removed in newer ESP32 chips, but some still have it
+  // Returns temperature in Fahrenheit by default in older chips
+  #ifdef SOC_TEMP_SENSOR_SUPPORTED
+    return (temprature_sens_read() - 32) / 1.8; // Convert to Celsius
+  #else
+    return 0.0;
+  #endif
+}
+
+void reportOTAProgress(int progress, int bytesReceived, int totalBytes) {
+  WiFiClientSecure client;
+  client.setInsecure();
+  HTTPClient http;
+
+  String url = "https://" + String(SERVER_HOST) + "/ota/progress";
+  
+  StaticJsonDocument<200> doc;
+  doc["deviceId"] = macAddress;
+  doc["progress"] = progress;
+  doc["bytesReceived"] = bytesReceived;
+  doc["totalBytes"] = totalBytes;
+
+  String payload;
+  serializeJson(doc, payload);
+
+  http.begin(client, url);
+  http.addHeader("Content-Type", "application/json");
+  http.POST(payload);
+  http.end();
+}
+
+void reportOTAResult(String status, String message = "") {
+  WiFiClientSecure client;
+  client.setInsecure();
+  HTTPClient http;
+
+  String url = "https://" + String(SERVER_HOST) + "/ota/report";
+  
+  StaticJsonDocument<200> doc;
+  doc["deviceId"] = macAddress;
+  doc["status"] = status; // success, failed, updated
+  doc["version"] = FIRMWARE_VERSION;
+  if (message != "") doc["message"] = message;
+
+  String payload;
+  serializeJson(doc, payload);
+
+  http.begin(client, url);
+  http.addHeader("Content-Type", "application/json");
+  http.POST(payload);
+  http.end();
+}
+
+void acknowledgeCommand(int commandId, String status, String response = "") {
+  WiFiClientSecure client;
+  client.setInsecure();
+  HTTPClient http;
+
+  String url = "https://" + String(SERVER_HOST) + "/ota/commands/" + String(commandId) + "/ack";
+  
+  StaticJsonDocument<200> doc;
+  doc["status"] = status;
+  if (response != "") doc["response"] = response;
+
+  String payload;
+  serializeJson(doc, payload);
+
+  http.begin(client, url);
+  http.addHeader("Content-Type", "application/json");
+  http.POST(payload);
+  http.end();
+}
+
 void sendHeartbeat() {
   if (WiFi.status() != WL_CONNECTED) return;
 
   WiFiClientSecure client;
-  client.setInsecure(); // Skip certificate validation (for testing)
+  client.setInsecure();
   HTTPClient http;
 
-  String url = "https://" + String(SERVER_HOST) + "/api/devices/" + macAddress + "/heartbeat";
+  // Correct URL for heartbeat
+  String url = "https://" + String(SERVER_HOST) + "/ota/heartbeat";
   
-  StaticJsonDocument<200> doc;
+  StaticJsonDocument<256> doc;
+  doc["mac"] = macAddress;
   doc["uptime"] = millis() / 1000;
   doc["freeHeap"] = ESP.getFreeHeap();
   doc["signalStrength"] = WiFi.RSSI();
-  doc["version"] = FIRMWARE_VERSION;
+  doc["cpuTemp"] = (int)(getInternalTemp() * 10); // Sent as integer Celsius * 10
 
   String payload;
   serializeJson(doc, payload);
@@ -76,10 +154,11 @@ void checkForUpdates() {
   Serial.println("[OTA] Checking for updates...");
   
   WiFiClientSecure client;
-  client.setInsecure(); // Skip certificate validation (for testing)
+  client.setInsecure();
   HTTPClient http;
 
-  String url = "https://" + String(SERVER_HOST) + "/api/ota/check?deviceId=" + macAddress + "&currentVersion=" + FIRMWARE_VERSION;
+  // Correct URL with query params
+  String url = "https://" + String(SERVER_HOST) + "/ota/check?deviceId=" + macAddress + "&version=" + String(FIRMWARE_VERSION);
 
   http.begin(client, url);
   int httpCode = http.GET();
@@ -93,25 +172,38 @@ void checkForUpdates() {
     
     if (updateAvailable) {
       String updateUrl = doc["url"].as<String>();
-      // If URL is relative, prepend server host
       if (updateUrl.startsWith("/")) {
         updateUrl = "https://" + String(SERVER_HOST) + updateUrl;
       }
       
       Serial.printf("[OTA] Update available! Downloading from: %s\n", updateUrl.c_str());
       
-      // Perform the update
+      // Setup progress callback
+      httpUpdate.onProgress([](int cur, int total) {
+        static int lastProgress = -1;
+        int progress = (cur * 100) / total;
+        if (progress != lastProgress) {
+          lastProgress = progress;
+          Serial.printf("[OTA] Progress: %d%%\n", progress);
+          reportOTAProgress(progress, cur, total);
+        }
+      });
+
+      // Perform update
       t_httpUpdate_return ret = httpUpdate.update(client, updateUrl);
 
       switch (ret) {
         case HTTP_UPDATE_FAILED:
-          Serial.printf("[OTA] Update failed. Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+          Serial.printf("[OTA] Update failed (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+          reportOTAResult("failed", httpUpdate.getLastErrorString());
           break;
         case HTTP_UPDATE_NO_UPDATES:
-          Serial.println("[OTA] No updates (server returned no updates)");
+          Serial.println("[OTA] No updates");
           break;
         case HTTP_UPDATE_OK:
-          Serial.println("[OTA] Update OK! Rebooting...");
+          Serial.println("[OTA] Success! Rebooting...");
+          reportOTAResult("success");
+          delay(1000);
           ESP.restart();
           break;
       }
@@ -125,6 +217,42 @@ void checkForUpdates() {
   http.end();
 }
 
+void pollCommands() {
+  if (WiFi.status() != WL_CONNECTED) return;
+
+  WiFiClientSecure client;
+  client.setInsecure();
+  HTTPClient http;
+
+  String url = "https://" + String(SERVER_HOST) + "/ota/commands?mac=" + macAddress;
+
+  http.begin(client, url);
+  int httpCode = http.GET();
+
+  if (httpCode == HTTP_CODE_OK) {
+    String payload = http.getString();
+    StaticJsonDocument<1024> doc;
+    deserializeJson(doc, payload);
+
+    JsonArray commands = doc.as<JsonArray>();
+    for (JsonObject cmd : commands) {
+      int id = cmd["id"];
+      String type = cmd["command"];
+      Serial.printf("[POLL] Received Command: %s (ID: %d)\n", type.c_str(), id);
+
+      if (type == "reboot") {
+        acknowledgeCommand(id, "success", "Rebooting via Poll...");
+        delay(1000);
+        ESP.restart();
+      } else if (type == "status") {
+        String status = "FreeHeap: " + String(ESP.getFreeHeap());
+        acknowledgeCommand(id, "success", status);
+      }
+    }
+  }
+  http.end();
+}
+
 // =================WEBSOCKET HANDLERS=================
 
 void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
@@ -134,55 +262,29 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
       break;
     case WStype_CONNECTED:
       Serial.printf("[WS] Connected to %s\n", payload);
-      
-      // Subscribe to console commands
-      {
-        StaticJsonDocument<200> doc;
-        doc["type"] = "subscribe-console";
-        doc["deviceId"] = macAddress;
-        String msg;
-        serializeJson(doc, msg);
-        webSocket.sendTXT(msg);
-      }
       break;
-      
     case WStype_TEXT:
       {
-        Serial.printf("[WS] Message: %s\n", payload);
         StaticJsonDocument<512> doc;
-        DeserializationError error = deserializeJson(doc, payload);
-
-        if (error) {
-          Serial.println("[WS] Failed to parse JSON");
-          return;
-        }
+        if (deserializeJson(doc, payload)) return;
 
         const char* msgType = doc["type"];
-        
-        // Handle incoming commands
-        if (strcmp(msgType, "command") == 0) {
-          String command = doc["command"];
-          String cmdId = doc["commandId"].as<String>(); // Just as example, schema uses int ID usually
+        if (msgType && strcmp(msgType, "command") == 0) {
+          JsonObject cmd = doc["command"];
+          int id = cmd["id"];
+          String type = cmd["command"];
           
-          Serial.printf("[CMD] Received: %s\n", command.c_str());
+          Serial.printf("[WS] Command: %s (ID: %d)\n", type.c_str(), id);
 
-          // Execute Command
-          if (command == "reboot") {
-            webSocket.sendTXT("{\"type\":\"command-ack\", \"status\":\"success\", \"response\":\"Rebooting...\"}");
+          if (type == "reboot") {
+            acknowledgeCommand(id, "success", "Rebooting via WS...");
             delay(1000);
             ESP.restart();
-          } 
-          else if (command == "factory_reset") {
-            // Add reset logic here (e.g., clear Preferences)
-             webSocket.sendTXT("{\"type\":\"command-ack\", \"status\":\"success\", \"response\":\"Factory reset initiated\"}");
-          }
-          else if (command == "status") {
+          } else if (type == "status") {
              String status = "Uptime: " + String(millis()/1000) + "s, Heap: " + String(ESP.getFreeHeap());
-             String resp = "{\"type\":\"command-ack\", \"status\":\"success\", \"response\":\"" + status + "\"}";
-             webSocket.sendTXT(resp);
-          }
-          else {
-            webSocket.sendTXT("{\"type\":\"command-ack\", \"status\":\"failed\", \"response\":\"Unknown command\"}");
+             acknowledgeCommand(id, "success", status);
+          } else {
+             acknowledgeCommand(id, "failed", "Unknown command type");
           }
         }
       }
@@ -196,7 +298,6 @@ void setup() {
   Serial.begin(115200);
   delay(1000);
   
-  // 1. Init Wi-Fi
   WiFi.mode(WIFI_STA);
   WiFi.begin(SSID, PASSWORD);
   Serial.print("Connecting to WiFi");
@@ -205,24 +306,14 @@ void setup() {
     Serial.print(".");
   }
   Serial.println("\n[WiFi] Connected!");
-  Serial.print("[WiFi] IP: ");
-  Serial.println(WiFi.localIP());
 
-  // 2. Identify Device
   macAddress = getMacAddress();
-  Serial.print("[Device] MAC: ");
-  Serial.println(macAddress);
+  Serial.printf("[Device] MAC: %s | Version: %s\n", macAddress.c_str(), FIRMWARE_VERSION);
 
-  // 3. Register Device (Optional - usually done via heartbeats implicitly or admin UI)
-  // For this firmware, we'll just start sending heartbeats.
-
-  // 4. Init WebSocket (Secure WSS)
-  Serial.println("[WS] Connecting to server...");
   webSocket.beginSSL(SERVER_HOST, SERVER_PORT, "/ws");
   webSocket.onEvent(webSocketEvent);
   webSocket.setReconnectInterval(5000);
   
-  // Initial Heartbeat
   sendHeartbeat();
   checkForUpdates();
 }
@@ -232,15 +323,19 @@ void loop() {
 
   unsigned long currentMillis = millis();
 
-  // Heartbeat Timer
   if (currentMillis - lastHeartbeat >= HEARTBEAT_INTERVAL) {
     lastHeartbeat = currentMillis;
     sendHeartbeat();
   }
 
-  // Periodic OTA Check
   if (currentMillis - lastOtaCheck >= OTA_CHECK_INTERVAL) {
     lastOtaCheck = currentMillis;
     checkForUpdates();
+  }
+
+  // Fallback Polling if WS is not connected or periodically
+  if (currentMillis - lastCommandPoll >= COMMAND_POLL_INTERVAL) {
+    lastCommandPoll = currentMillis;
+    pollCommands();
   }
 }
