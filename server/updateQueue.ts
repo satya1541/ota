@@ -1,14 +1,9 @@
 import { storage } from './storage';
 import logger from './logger';
-import * as PQueueImport from 'p-queue';
+import PQueue from 'p-queue';
 
-// Support both ESM and CommonJS consumers of p-queue by resolving
-// the actual constructor at runtime. Some build setups expose the
-// constructor as the default export, others as a named `PQueue`.
-// Some bundlers (or the __toESM wrapper) can produce a nested `default` shape
-// where `PQueueImport.default` is the CJS exports object which itself has a
-// `default` property that is the constructor function. Handle that shape too.
-const ResolvedPQueue: any = (PQueueImport as any).default?.default ?? (PQueueImport as any).default ?? (PQueueImport as any).PQueue ?? PQueueImport;
+// For p-queue v6, the default export is the constructor.
+const ResolvedPQueue: any = PQueue;
 
 interface UpdateTask {
   deviceId: string;
