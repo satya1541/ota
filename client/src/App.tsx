@@ -33,10 +33,6 @@ function PageLoader() {
 function AppShell() {
   return (
     <div className="flex h-screen overflow-hidden bg-transparent">
-      {/* Sidebar removed as requested - navigation moved to header */}
-
-      {/* Mobile Sidebar removed since navigation is in Header/BottomNav */}
-
       <div className="flex flex-1 flex-col overflow-hidden bg-transparent">
         <Header />
         <main className="flex-1 overflow-y-auto overflow-x-hidden bg-transparent pb-20 lg:pb-0 main-content-area">
@@ -130,7 +126,25 @@ function App() {
         <BackgroundImage />
         <div className="scanline" />
         <div className="cinematic-vignette" />
-        <Toaster position="top-right" richColors closeButton />
+        <Toaster
+          position="top-right"
+          richColors={false}
+          closeButton
+          toastOptions={{
+            unstyled: true,
+            classNames: {
+              toast: "bg-card text-foreground border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] p-4 w-full flex items-center gap-3 font-mono uppercase tracking-wide",
+              title: "font-black text-sm",
+              description: "text-xs opacity-80 font-bold",
+              actionButton: "bg-primary text-primary-foreground border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all text-xs font-black px-3 py-1",
+              cancelButton: "bg-muted text-muted-foreground border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all text-xs font-black px-3 py-1",
+              error: "bg-red-500 text-white border-black [&_svg]:text-white",
+              success: "bg-green-500 text-white border-black [&_svg]:text-white",
+              warning: "bg-yellow-400 text-black border-black [&_svg]:text-black",
+              info: "bg-blue-400 text-white border-black [&_svg]:text-white",
+            }
+          }}
+        />
         {CommandPalette && <CommandPalette onThemeToggle={handleThemeToggle} isDark={theme === 'dark'} />}
         {PWAPrompts && (
           <>

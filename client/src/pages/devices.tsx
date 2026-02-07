@@ -39,6 +39,7 @@ import {
   CloudUpload,
   Loader as LoaderIcon,
 } from "lucide-react";
+import { MotionWrapper } from "@/components/ui/motion-wrapper";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Dialog,
@@ -933,428 +934,430 @@ export default function Devices() {
 
   return (
     <Layout title={t('devices.title')}>
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="space-y-6"
-      >
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-3 md:gap-4 relative z-50">
-          <motion.div variants={item} className="w-full md:w-auto">
-            <div className="flex items-center justify-between md:block">
-              <div>
-                <h2 className="text-2xl md:text-3xl font-black tracking-tighter text-foreground">{t('devices.title')}</h2>
-                <p className="text-foreground/40 text-[9px] md:text-[10px] font-black uppercase tracking-widest leading-none">{t('devices.fleet')}</p>
-              </div>
-              <div className="md:hidden">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setAddDialogOpen(true)}
-                  className="h-10 w-10 border-primary/20 bg-primary/5 text-primary shadow-[0_0_15px_rgba(0,240,255,0.2)] rounded-xl"
-                >
-                  <Plus className="h-5 w-5" />
-                </Button>
-              </div>
-            </div>
-          </motion.div>
-          <motion.div variants={item} className="hidden md:flex gap-2">
-            <Button
-              onClick={() => setAddDialogOpen(true)}
-              className="h-10 px-6 bg-primary hover:bg-primary/90 text-primary-foreground gap-2 transition-all hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(0,240,255,0.6)] font-black uppercase tracking-widest text-[10px] rounded-xl border-none"
-            >
-              <Plus className="h-4 w-4" />
-              {t('devices.register_new_node')}
-            </Button>
-          </motion.div>
-        </div>
-
-        {/* Action Bar */}
-        <motion.div variants={item} className="flex flex-col gap-3 md:flex-row md:items-center justify-between bg-black/20 backdrop-blur-md p-3 md:p-4 rounded-xl border border-white/5 relative z-50">
-          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-3 flex-1">
-            <div className="relative flex-1 md:max-w-xs">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
-              <Input
-                placeholder={t('devices.search_fleet')}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 h-11 md:h-10 bg-black/20 border-white/5 ring-1 ring-white/5 focus-visible:ring-primary/40 text-sm placeholder:text-muted-foreground/40"
-              />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-[160px] h-11 md:h-10 bg-black/20 border-white/5 ring-1 ring-white/5 text-sm">
-                <SelectValue placeholder={t('devices.all_states')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('devices.all_states')}</SelectItem>
-                <SelectItem value="online">{t('devices.online')}</SelectItem>
-                <SelectItem value="offline">{t('dashboard.offline')}</SelectItem>
-                <SelectItem value="updating">{t('devices.updating')}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <AnimatePresence>
-            {selectedDevices.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                className="flex flex-wrap items-center gap-2 pt-2 md:pt-0 border-t border-white/5 md:border-0"
-              >
-                <Badge variant="secondary" className="h-10 px-3 bg-primary/10 text-primary border border-primary/20 font-black tracking-widest text-[9px] uppercase">
-                  {selectedDevices.length} {t('devices.fleet')}
-                </Badge>
-                <div className="flex items-center gap-2 flex-1 md:flex-initial">
-                  <Button
-                    onClick={() => {
-                      selectedDevices.forEach((mac) => resetActivityMutation.mutate(mac));
-                    }}
-                    disabled={resetActivityMutation.isPending}
-                    className="h-10 flex-1 md:flex-initial px-3 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-foreground transition-all active:scale-95 border border-white/10"
-                    title={t('devices.reset_status')}
-                  >
-                    <RotateCcw className="h-4 w-4" />
-                    <span className="hidden sm:inline ml-2 text-[10px] font-black uppercase tracking-widest">{t('devices.reset_status')}</span>
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      setRollbackDialogOpen(true);
-                    }}
-                    disabled={rollbackMutation.isPending}
-                    className="h-10 flex-1 md:flex-initial px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black transition-all active:scale-95 shadow-[0_0_20px_rgba(245,158,11,0.4)] border-none"
-                    title={t('devices.rollback', { count: selectedDevices.length })}
-                  >
-                    <HistoryIcon className="h-4 w-4" />
-                    <span className="hidden sm:inline ml-2 text-[10px] font-black uppercase tracking-widest">ROLLBACK</span>
-                  </Button>
-                  <Button
-                    onClick={() => setDeployDialogOpen(true)}
-                    className="h-10 flex-1 md:flex-initial px-3 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground transition-all active:scale-95 shadow-[0_0_25px_rgba(0,240,255,0.5)] border-none"
-                    title={t('devices.deploy', { count: selectedDevices.length })}
-                  >
-                    <CloudUpload className="h-4 w-4" />
-                    <span className="hidden sm:inline ml-2 text-[10px] font-black uppercase tracking-widest">{t('devices.deploy', { count: selectedDevices.length })}</span>
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-10 w-10 hover:bg-white/10">
-                        <MoreHorizontal className="h-4 w-4 text-foreground/50" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56 border-white/10 bg-black/90 backdrop-blur-xl">
-                      <DropdownMenuItem
-                        className="text-destructive font-bold uppercase tracking-widest text-[10px] p-3"
-                        onClick={() => setBulkDeleteDialogOpen(true)}
-                      >
-                        <Trash className="mr-3 h-4 w-4" />
-                        {t('devices.delete_all_selected')}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+      <MotionWrapper className="h-full flex flex-col">
+        <motion.div
+          variants={container}
+          initial="hidden"
+          animate="show"
+          className="space-y-6"
+        >
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-3 md:gap-4 relative z-50">
+            <motion.div variants={item} className="w-full md:w-auto">
+              <div className="flex items-center justify-between md:block">
+                <div>
+                  <h2 className="text-2xl md:text-3xl font-black tracking-tighter text-foreground">{t('devices.title')}</h2>
+                  <p className="text-foreground/40 text-[9px] md:text-[10px] font-black uppercase tracking-widest leading-none">{t('devices.fleet')}</p>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-
-        {/* Devices List (Card View for Mobile, Table for Desktop) */}
-        <motion.div variants={item}>
-          {/* Mobile Card View */}
-          <div className="grid grid-cols-1 gap-3 md:hidden px-1">
-            {filteredDevices.map((device) => (
-              <MobileDeviceCard key={device.id} device={device} />
-            ))}
-            {filteredDevices.length === 0 && (
-              <div className="h-40 flex items-center justify-center text-muted-foreground bg-black/20 rounded-xl border border-dashed border-white/10">
-                No devices found.
-              </div>
-            )}
-          </div>
-
-          {/* Desktop Table View */}
-          <div className="hidden md:block rounded-xl border border-border/50 overflow-hidden bg-black/20">
-            <Table>
-              <TableHeader className="bg-white/5">
-                <TableRow className="hover:bg-transparent border-none">
-                  <TableHead className="w-12">
-                    <Checkbox
-                      checked={selectedDevices.length === filteredDevices.length && filteredDevices.length > 0}
-                      onCheckedChange={toggleSelectAll}
-                    />
-                  </TableHead>
-                  <TableHead className="text-foreground/70 font-bold uppercase tracking-wider text-xs">Devices</TableHead>
-                  <TableHead className="text-foreground/70 font-bold uppercase tracking-wider text-xs">Status</TableHead>
-                  <TableHead className="text-foreground/70 font-bold uppercase tracking-wider text-xs">Version</TableHead>
-                  <TableHead className="text-foreground/70 font-bold uppercase tracking-wider text-xs">Activity</TableHead>
-                  <TableHead className="text-right text-foreground/70 font-bold uppercase tracking-wider text-xs">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredDevices.map((device) => (
-                  <TableRow
-                    key={device.id}
-                    id={`device-row-${device.macAddress}`}
-                    className={`
-                      transition-colors border-b border-white/5 last:border-0 cursor-pointer
-                      ${selectedDevices.includes(device.macAddress) ? 'bg-accent/10 hover:bg-accent/15' : 'hover:bg-white/5'}
-                    `}
-                    onClick={() => toggleSelectDevice(device.macAddress)}
+                <div className="md:hidden">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setAddDialogOpen(true)}
+                    className="h-10 w-10 border-primary/20 bg-primary/5 text-primary shadow-[0_0_15px_rgba(0,240,255,0.2)] rounded-xl"
                   >
-                    <TableCell onClick={(e) => e.stopPropagation()}>
-                      <Checkbox
-                        checked={selectedDevices.includes(device.macAddress)}
-                        onCheckedChange={() => toggleSelectDevice(device.macAddress)}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <span className="font-bold text-foreground">{device.name}</span>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
-                          <Microchip className="h-3 w-3" />
-                          {device.macAddress}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <div className={`h-2 w-2 rounded-full shadow-[0_0_8px_currentColor] ${device.status === 'online' ? 'bg-emerald-500 text-emerald-500' :
-                          device.status === 'offline' ? 'bg-slate-500 text-slate-500' :
-                            'bg-amber-500 text-amber-500'
-                          }`} />
-                        <span className="text-xs font-medium uppercase tracking-wider text-foreground/70">
-                          {device.status}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="bg-white/5 border-border/50 font-mono text-xs">
-                        {device.currentVersion || "v0.0.0"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <ActivityIndicator
-                        status={device.otaStatus}
-                        updateStartedAt={device.updateStartedAt}
-                      />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2 pt-3" onClick={(e) => e.stopPropagation()}>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 hover:bg-white/10 text-foreground/50 hover:text-foreground"
-                          onClick={() => {
-                            setEditingDevice(device);
-                            setEditDialogOpen(true);
-                          }}
-                        >
-                          <PenLine className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 hover:bg-rose-500/10 text-foreground/50 hover:text-rose-500"
-                          onClick={() => openDeleteDialog(device)}
-                        >
-                          <Trash className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {filteredDevices.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                      No devices found.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </motion.div>
-      </motion.div>
-
-      {/* Dialogs */}
-      <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-        <DialogContent className="rounded-2xl border-none ring-1 ring-border/50 shadow-2xl bg-background max-w-[600px] p-6">
-          <DialogHeader className="mb-4">
-            <DialogTitle className="text-xl font-black text-foreground">Register New Device</DialogTitle>
-            <DialogDescription className="text-xs text-foreground/50">
-              {t('devices.onboard_new_device')}
-            </DialogDescription>
-          </DialogHeader>
-          <RegisterNodeForm
-            isPending={createMutation.isPending}
-            onSubmit={(data) => createMutation.mutate(data)}
-            onCancel={() => setAddDialogOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="rounded-2xl border-none ring-1 ring-border/50 shadow-2xl bg-background max-w-[600px] p-6">
-          <DialogHeader className="mb-4">
-            <DialogTitle className="text-xl font-black text-foreground">Edit Device</DialogTitle>
-            <DialogDescription className="text-xs text-foreground/50">
-              {t('devices.update_device_parameters')}
-            </DialogDescription>
-          </DialogHeader>
-          <EditDeviceForm
-            editingDevice={editingDevice}
-            isPending={updateMutation.isPending}
-            onNameChange={handleEditNameChange}
-            onGroupChange={handleEditGroupChange}
-            onVersionChange={handleEditVersionChange}
-            onLocationChange={handleEditLocationChange}
-            onLatitudeChange={handleEditLatitudeChange}
-            onLongitudeChange={handleEditLongitudeChange}
-            onSubmit={handleEditDevice}
-            onCancel={() => setEditDialogOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <DeleteDeviceDialog
-        open={deleteDialogOpen}
-        device={deviceToDelete}
-        isPending={deleteMutation.isPending}
-        onClose={() => setDeleteDialogOpen(false)}
-        onDelete={handleDeleteDevice}
-      />
-
-      {/* Bulk Delete Confirmation Dialog */}
-      <AlertDialog open={bulkDeleteDialogOpen} onOpenChange={setBulkDeleteDialogOpen}>
-        <AlertDialogContent className="rounded-2xl border-none ring-1 ring-border/50 shadow-2xl bg-background max-w-[550px] p-6">
-          <AlertDialogTitle className="font-black text-foreground">Delete {selectedDevices.length} Devices?</AlertDialogTitle>
-          <AlertDialogDescription className="text-sm text-foreground/60">
-            This action cannot be undone. These devices will be permanently removed from the device registry.
-          </AlertDialogDescription>
-
-          <div className="space-y-3 pt-2">
-            <Label htmlFor="bulk-delete-reason" className="text-xs font-bold text-foreground/70">
-              {t('devices.reason_for_deletion')} <span className="text-rose-400">*</span>
-            </Label>
-            <Textarea
-              id="bulk-delete-reason"
-              value={bulkDeleteReason}
-              onChange={(e) => setBulkDeleteReason(e.target.value)}
-              placeholder="Reason for bulk deletion..."
-              className="min-h-[80px] rounded-xl border-none ring-1 ring-border/50 bg-white/5 text-foreground placeholder:text-foreground/30 focus:ring-rose-500/50 resize-none"
-            />
-          </div>
-
-          <div className="flex gap-2 justify-end pt-4">
-            <AlertDialogCancel className="rounded-xl border-none ring-1 ring-border/50 bg-white/5 text-foreground/70 hover:bg-accent/10 hover:text-foreground transition-all">
-              {t('common.cancel')}
-            </AlertDialogCancel>
-            <Button
-              onClick={handleBulkDelete}
-              disabled={bulkDeleteReason.trim().length === 0 || bulkDeleteMutation.isPending}
-              className="bg-rose-500/80 hover:bg-rose-500 text-foreground rounded-xl shadow-lg shadow-rose-500/20 px-6 border-none transition-all hover-elevate disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {bulkDeleteMutation.isPending ? t('devices.deleting') : `Delete ${selectedDevices.length} Devices`}
-            </Button>
-          </div>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Rollback Confirmation Dialog */}
-      <AlertDialog open={rollbackDialogOpen} onOpenChange={setRollbackDialogOpen}>
-        <AlertDialogContent className="rounded-2xl border-none ring-1 ring-border/50 shadow-2xl bg-background max-w-[550px] p-6">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="font-black text-foreground">
-              {selectedDevices.length === 1
-                ? `Rollback ${devices.find(d => d.macAddress === selectedDevices[0])?.name || 'Device'}?`
-                : `Rollback ${selectedDevices.length} Devices?`
-              }
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-sm text-foreground/60">
-              {(() => {
-                const targets = devices.filter(d => selectedDevices.includes(d.macAddress));
-                const names = targets.map(d => d.name).join(", ");
-                const versions = targets.map(d => d.previousVersion || "unknown version").join(", ");
-                return `Are you sure you want to rollback ${names} to ${targets.length === 1 ? 'its' : 'their'} previous firmware version (${versions})? This action may interrupt current operations.`;
-              })()}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="flex gap-2 justify-end pt-4">
-            <AlertDialogCancel className="rounded-xl border-none ring-1 ring-border/50 bg-white/5 text-foreground/70 hover:bg-accent/10 hover:text-foreground transition-all">
-              {t('common.cancel')}
-            </AlertDialogCancel>
-            <Button
-              onClick={() => {
-                selectedDevices.forEach((mac) => rollbackMutation.mutate(mac));
-                setRollbackDialogOpen(false);
-              }}
-              className="bg-amber-500 hover:bg-amber-400 text-black rounded-xl shadow-lg shadow-amber-500/20 px-6 border-none transition-all hover-elevate"
-            >
-              Confirm Rollback
-            </Button>
-          </div>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <Dialog open={deployDialogOpen} onOpenChange={setDeployDialogOpen}>
-        <DialogContent className="max-w-[550px] rounded-2xl border-none ring-1 ring-border/50 shadow-2xl bg-background p-6">
-          <DialogHeader>
-            <DialogTitle>{t('dashboard.deploy_to_selected', { count: selectedDevices.length })}</DialogTitle>
-            <DialogDescription>
-              {t('dashboard.choose_firmware_version')}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="firmware">{t('dashboard.firmware_version')}</Label>
-              <Select
-                key={`fw-select-${firmwares.length}`}
-                value={selectedVersion}
-                onValueChange={setSelectedVersion}
+                    <Plus className="h-5 w-5" />
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+            <motion.div variants={item} className="hidden md:flex gap-2">
+              <Button
+                onClick={() => setAddDialogOpen(true)}
+                className="h-10 px-6 bg-primary hover:bg-primary/90 text-primary-foreground gap-2 transition-all hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(0,240,255,0.6)] font-black uppercase tracking-widest text-[10px] rounded-xl border-none"
               >
-                <SelectTrigger id="firmware">
-                  <SelectValue placeholder={t('dashboard.select_version')} />
+                <Plus className="h-4 w-4" />
+                {t('devices.register_new_node')}
+              </Button>
+            </motion.div>
+          </div>
+
+          {/* Action Bar */}
+          <motion.div variants={item} className="flex flex-col gap-3 md:flex-row md:items-center justify-between bg-black/20 backdrop-blur-md p-3 md:p-4 rounded-xl border border-white/5 relative z-50">
+            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-3 flex-1">
+              <div className="relative flex-1 md:max-w-xs">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
+                <Input
+                  placeholder={t('devices.search_fleet')}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9 h-11 md:h-10 bg-black/20 border-white/5 ring-1 ring-white/5 focus-visible:ring-primary/40 text-sm placeholder:text-muted-foreground/40"
+                />
+              </div>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full md:w-[160px] h-11 md:h-10 bg-black/20 border-white/5 ring-1 ring-white/5 text-sm">
+                  <SelectValue placeholder={t('devices.all_states')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {loadingFirmware ? (
-                    <div className="flex items-center justify-center py-4">
-                      <LoaderIcon className="w-4 h-4 animate-spin mr-2" />
-                      <span className="text-sm">Loading firmwares...</span>
-                    </div>
-                  ) : firmwares.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-6 px-4">
-                      <Package className="h-8 w-8 text-muted-foreground mb-2" />
-                      <p className="text-sm text-muted-foreground text-center">
-                        No firmware available. Upload firmware first.
-                      </p>
-                    </div>
-                  ) : (
-                    firmwares.map((fw: any) => (
-                      <SelectItem key={fw.id} value={fw.version}>
-                        {fw.version} ({fw.filename})
-                      </SelectItem>
-                    ))
-                  )}
+                  <SelectItem value="all">{t('devices.all_states')}</SelectItem>
+                  <SelectItem value="online">{t('devices.online')}</SelectItem>
+                  <SelectItem value="offline">{t('dashboard.offline')}</SelectItem>
+                  <SelectItem value="updating">{t('devices.updating')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-          </div>
-          <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={() => setDeployDialogOpen(false)}>
-              {t('common.cancel')}
-            </Button>
-            <Button
-              onClick={() => deployMutation.mutate({ deviceIds: selectedDevices, version: selectedVersion })}
-              disabled={!selectedVersion || deployMutation.isPending}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest text-[10px] h-12 px-8 rounded-xl shadow-lg shadow-primary/20 transition-all hover-elevate active-elevate-2 border-none"
-            >
-              {deployMutation.isPending ? <LoaderIcon className="w-4 h-4 animate-spin mr-2" /> : <CloudUpload className="w-4 h-4 mr-2" />}
-              {t('dashboard.deploy_update')}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+
+            <AnimatePresence>
+              {selectedDevices.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="flex flex-wrap items-center gap-2 pt-2 md:pt-0 border-t border-white/5 md:border-0"
+                >
+                  <Badge variant="secondary" className="h-10 px-3 bg-primary/10 text-primary border border-primary/20 font-black tracking-widest text-[9px] uppercase">
+                    {selectedDevices.length} {t('devices.fleet')}
+                  </Badge>
+                  <div className="flex items-center gap-2 flex-1 md:flex-initial">
+                    <Button
+                      onClick={() => {
+                        selectedDevices.forEach((mac) => resetActivityMutation.mutate(mac));
+                      }}
+                      disabled={resetActivityMutation.isPending}
+                      className="h-10 flex-1 md:flex-initial px-3 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-foreground transition-all active:scale-95 border border-white/10"
+                      title={t('devices.reset_status')}
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                      <span className="hidden sm:inline ml-2 text-[10px] font-black uppercase tracking-widest">{t('devices.reset_status')}</span>
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setRollbackDialogOpen(true);
+                      }}
+                      disabled={rollbackMutation.isPending}
+                      className="h-10 flex-1 md:flex-initial px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black transition-all active:scale-95 shadow-[0_0_20px_rgba(245,158,11,0.4)] border-none"
+                      title={t('devices.rollback', { count: selectedDevices.length })}
+                    >
+                      <HistoryIcon className="h-4 w-4" />
+                      <span className="hidden sm:inline ml-2 text-[10px] font-black uppercase tracking-widest">ROLLBACK</span>
+                    </Button>
+                    <Button
+                      onClick={() => setDeployDialogOpen(true)}
+                      className="h-10 flex-1 md:flex-initial px-3 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground transition-all active:scale-95 shadow-[0_0_25px_rgba(0,240,255,0.5)] border-none"
+                      title={t('devices.deploy', { count: selectedDevices.length })}
+                    >
+                      <CloudUpload className="h-4 w-4" />
+                      <span className="hidden sm:inline ml-2 text-[10px] font-black uppercase tracking-widest">{t('devices.deploy', { count: selectedDevices.length })}</span>
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-10 w-10 hover:bg-white/10">
+                          <MoreHorizontal className="h-4 w-4 text-foreground/50" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56 border-white/10 bg-black/90 backdrop-blur-xl">
+                        <DropdownMenuItem
+                          className="text-destructive font-bold uppercase tracking-widest text-[10px] p-3"
+                          onClick={() => setBulkDeleteDialogOpen(true)}
+                        >
+                          <Trash className="mr-3 h-4 w-4" />
+                          {t('devices.delete_all_selected')}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+
+          {/* Devices List (Card View for Mobile, Table for Desktop) */}
+          <motion.div variants={item}>
+            {/* Mobile Card View */}
+            <div className="grid grid-cols-1 gap-3 md:hidden px-1">
+              {filteredDevices.map((device) => (
+                <MobileDeviceCard key={device.id} device={device} />
+              ))}
+              {filteredDevices.length === 0 && (
+                <div className="h-40 flex items-center justify-center text-muted-foreground bg-black/20 rounded-xl border border-dashed border-white/10">
+                  No devices found.
+                </div>
+              )}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block rounded-xl border border-border/50 overflow-hidden bg-black/20">
+              <Table>
+                <TableHeader className="bg-white/5">
+                  <TableRow className="hover:bg-transparent border-none">
+                    <TableHead className="w-12">
+                      <Checkbox
+                        checked={selectedDevices.length === filteredDevices.length && filteredDevices.length > 0}
+                        onCheckedChange={toggleSelectAll}
+                      />
+                    </TableHead>
+                    <TableHead className="text-foreground/70 font-bold uppercase tracking-wider text-xs">Devices</TableHead>
+                    <TableHead className="text-foreground/70 font-bold uppercase tracking-wider text-xs">Status</TableHead>
+                    <TableHead className="text-foreground/70 font-bold uppercase tracking-wider text-xs">Version</TableHead>
+                    <TableHead className="text-foreground/70 font-bold uppercase tracking-wider text-xs">Activity</TableHead>
+                    <TableHead className="text-right text-foreground/70 font-bold uppercase tracking-wider text-xs">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredDevices.map((device) => (
+                    <TableRow
+                      key={device.id}
+                      id={`device-row-${device.macAddress}`}
+                      className={`
+                      transition-colors border-b border-white/5 last:border-0 cursor-pointer
+                      ${selectedDevices.includes(device.macAddress) ? 'bg-accent/10 hover:bg-accent/15' : 'hover:bg-white/5'}
+                    `}
+                      onClick={() => toggleSelectDevice(device.macAddress)}
+                    >
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          checked={selectedDevices.includes(device.macAddress)}
+                          onCheckedChange={() => toggleSelectDevice(device.macAddress)}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <span className="font-bold text-foreground">{device.name}</span>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
+                            <Microchip className="h-3 w-3" />
+                            {device.macAddress}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <div className={`h-2 w-2 rounded-full shadow-[0_0_8px_currentColor] ${device.status === 'online' ? 'bg-emerald-500 text-emerald-500' :
+                            device.status === 'offline' ? 'bg-slate-500 text-slate-500' :
+                              'bg-amber-500 text-amber-500'
+                            }`} />
+                          <span className="text-xs font-medium uppercase tracking-wider text-foreground/70">
+                            {device.status}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="bg-white/5 border-border/50 font-mono text-xs">
+                          {device.currentVersion || "v0.0.0"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <ActivityIndicator
+                          status={device.otaStatus}
+                          updateStartedAt={device.updateStartedAt}
+                        />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2 pt-3" onClick={(e) => e.stopPropagation()}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 hover:bg-white/10 text-foreground/50 hover:text-foreground"
+                            onClick={() => {
+                              setEditingDevice(device);
+                              setEditDialogOpen(true);
+                            }}
+                          >
+                            <PenLine className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 hover:bg-rose-500/10 text-foreground/50 hover:text-rose-500"
+                            onClick={() => openDeleteDialog(device)}
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {filteredDevices.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                        No devices found.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </motion.div>
+        </motion.div>
+
+        {/* Dialogs */}
+        <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+          <DialogContent className="rounded-2xl border-none ring-1 ring-border/50 shadow-2xl bg-background max-w-[600px] p-6">
+            <DialogHeader className="mb-4">
+              <DialogTitle className="text-xl font-black text-foreground">Register New Device</DialogTitle>
+              <DialogDescription className="text-xs text-foreground/50">
+                {t('devices.onboard_new_device')}
+              </DialogDescription>
+            </DialogHeader>
+            <RegisterNodeForm
+              isPending={createMutation.isPending}
+              onSubmit={(data) => createMutation.mutate(data)}
+              onCancel={() => setAddDialogOpen(false)}
+            />
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+          <DialogContent className="rounded-2xl border-none ring-1 ring-border/50 shadow-2xl bg-background max-w-[600px] p-6">
+            <DialogHeader className="mb-4">
+              <DialogTitle className="text-xl font-black text-foreground">Edit Device</DialogTitle>
+              <DialogDescription className="text-xs text-foreground/50">
+                {t('devices.update_device_parameters')}
+              </DialogDescription>
+            </DialogHeader>
+            <EditDeviceForm
+              editingDevice={editingDevice}
+              isPending={updateMutation.isPending}
+              onNameChange={handleEditNameChange}
+              onGroupChange={handleEditGroupChange}
+              onVersionChange={handleEditVersionChange}
+              onLocationChange={handleEditLocationChange}
+              onLatitudeChange={handleEditLatitudeChange}
+              onLongitudeChange={handleEditLongitudeChange}
+              onSubmit={handleEditDevice}
+              onCancel={() => setEditDialogOpen(false)}
+            />
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <DeleteDeviceDialog
+          open={deleteDialogOpen}
+          device={deviceToDelete}
+          isPending={deleteMutation.isPending}
+          onClose={() => setDeleteDialogOpen(false)}
+          onDelete={handleDeleteDevice}
+        />
+
+        {/* Bulk Delete Confirmation Dialog */}
+        <AlertDialog open={bulkDeleteDialogOpen} onOpenChange={setBulkDeleteDialogOpen}>
+          <AlertDialogContent className="rounded-2xl border-none ring-1 ring-border/50 shadow-2xl bg-background max-w-[550px] p-6">
+            <AlertDialogTitle className="font-black text-foreground">Delete {selectedDevices.length} Devices?</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm text-foreground/60">
+              This action cannot be undone. These devices will be permanently removed from the device registry.
+            </AlertDialogDescription>
+
+            <div className="space-y-3 pt-2">
+              <Label htmlFor="bulk-delete-reason" className="text-xs font-bold text-foreground/70">
+                {t('devices.reason_for_deletion')} <span className="text-rose-400">*</span>
+              </Label>
+              <Textarea
+                id="bulk-delete-reason"
+                value={bulkDeleteReason}
+                onChange={(e) => setBulkDeleteReason(e.target.value)}
+                placeholder="Reason for bulk deletion..."
+                className="min-h-[80px] rounded-xl border-none ring-1 ring-border/50 bg-white/5 text-foreground placeholder:text-foreground/30 focus:ring-rose-500/50 resize-none"
+              />
+            </div>
+
+            <div className="flex gap-2 justify-end pt-4">
+              <AlertDialogCancel className="rounded-xl border-none ring-1 ring-border/50 bg-white/5 text-foreground/70 hover:bg-accent/10 hover:text-foreground transition-all">
+                {t('common.cancel')}
+              </AlertDialogCancel>
+              <Button
+                onClick={handleBulkDelete}
+                disabled={bulkDeleteReason.trim().length === 0 || bulkDeleteMutation.isPending}
+                className="bg-rose-500/80 hover:bg-rose-500 text-foreground rounded-xl shadow-lg shadow-rose-500/20 px-6 border-none transition-all hover-elevate disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {bulkDeleteMutation.isPending ? t('devices.deleting') : `Delete ${selectedDevices.length} Devices`}
+              </Button>
+            </div>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Rollback Confirmation Dialog */}
+        <AlertDialog open={rollbackDialogOpen} onOpenChange={setRollbackDialogOpen}>
+          <AlertDialogContent className="rounded-2xl border-none ring-1 ring-border/50 shadow-2xl bg-background max-w-[550px] p-6">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="font-black text-foreground">
+                {selectedDevices.length === 1
+                  ? `Rollback ${devices.find(d => d.macAddress === selectedDevices[0])?.name || 'Device'}?`
+                  : `Rollback ${selectedDevices.length} Devices?`
+                }
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-sm text-foreground/60">
+                {(() => {
+                  const targets = devices.filter(d => selectedDevices.includes(d.macAddress));
+                  const names = targets.map(d => d.name).join(", ");
+                  const versions = targets.map(d => d.previousVersion || "unknown version").join(", ");
+                  return `Are you sure you want to rollback ${names} to ${targets.length === 1 ? 'its' : 'their'} previous firmware version (${versions})? This action may interrupt current operations.`;
+                })()}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="flex gap-2 justify-end pt-4">
+              <AlertDialogCancel className="rounded-xl border-none ring-1 ring-border/50 bg-white/5 text-foreground/70 hover:bg-accent/10 hover:text-foreground transition-all">
+                {t('common.cancel')}
+              </AlertDialogCancel>
+              <Button
+                onClick={() => {
+                  selectedDevices.forEach((mac) => rollbackMutation.mutate(mac));
+                  setRollbackDialogOpen(false);
+                }}
+                className="bg-amber-500 hover:bg-amber-400 text-black rounded-xl shadow-lg shadow-amber-500/20 px-6 border-none transition-all hover-elevate"
+              >
+                Confirm Rollback
+              </Button>
+            </div>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <Dialog open={deployDialogOpen} onOpenChange={setDeployDialogOpen}>
+          <DialogContent className="max-w-[550px] rounded-2xl border-none ring-1 ring-border/50 shadow-2xl bg-background p-6">
+            <DialogHeader>
+              <DialogTitle>{t('dashboard.deploy_to_selected', { count: selectedDevices.length })}</DialogTitle>
+              <DialogDescription>
+                {t('dashboard.choose_firmware_version')}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="firmware">{t('dashboard.firmware_version')}</Label>
+                <Select
+                  key={`fw-select-${firmwares.length}`}
+                  value={selectedVersion}
+                  onValueChange={setSelectedVersion}
+                >
+                  <SelectTrigger id="firmware">
+                    <SelectValue placeholder={t('dashboard.select_version')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {loadingFirmware ? (
+                      <div className="flex items-center justify-center py-4">
+                        <LoaderIcon className="w-4 h-4 animate-spin mr-2" />
+                        <span className="text-sm">Loading firmwares...</span>
+                      </div>
+                    ) : firmwares.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-6 px-4">
+                        <Package className="h-8 w-8 text-muted-foreground mb-2" />
+                        <p className="text-sm text-muted-foreground text-center">
+                          No firmware available. Upload firmware first.
+                        </p>
+                      </div>
+                    ) : (
+                      firmwares.map((fw: any) => (
+                        <SelectItem key={fw.id} value={fw.version}>
+                          {fw.version} ({fw.filename})
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={() => setDeployDialogOpen(false)}>
+                {t('common.cancel')}
+              </Button>
+              <Button
+                onClick={() => deployMutation.mutate({ deviceIds: selectedDevices, version: selectedVersion })}
+                disabled={!selectedVersion || deployMutation.isPending}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest text-[10px] h-12 px-8 rounded-xl shadow-lg shadow-primary/20 transition-all hover-elevate active-elevate-2 border-none"
+              >
+                {deployMutation.isPending ? <LoaderIcon className="w-4 h-4 animate-spin mr-2" /> : <CloudUpload className="w-4 h-4 mr-2" />}
+                {t('dashboard.deploy_update')}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </MotionWrapper>
     </Layout>
   );
 }

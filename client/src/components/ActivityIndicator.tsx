@@ -1,7 +1,6 @@
 import { memo, useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader, CheckCircle2, XCircle, Clock, Circle, Radio } from "lucide-react";
-import { useTheme } from "@/lib/theme";
+import { Loader, CheckCircle2, XCircle, Clock, Circle, Radio, AlertTriangle } from "lucide-react";
 
 interface ActivityIndicatorProps {
     status: string | null;
@@ -9,21 +8,14 @@ interface ActivityIndicatorProps {
     className?: string;
 }
 
-// Planet configuration for solar system effect
-const planets = [
-    { color: "bg-cyan-400", glowColor: "shadow-[0_0_6px_rgba(34,211,238,0.8)]", size: 3, orbitRadius: 16, duration: 2, trail: true },
-    { color: "bg-blue-500", glowColor: "shadow-[0_0_4px_rgba(59,130,246,0.7)]", size: 2.5, orbitRadius: 12, duration: 1.5, trail: true },
-    { color: "bg-purple-400", glowColor: "shadow-[0_0_4px_rgba(192,132,252,0.7)]", size: 2, orbitRadius: 20, duration: 3, trail: false },
-];
-
-// Generate random particles for success explosion
+// Generate random particles for success stamp
 const generateParticles = (count: number) => {
     return Array.from({ length: count }, (_, i) => ({
         id: i,
         angle: (360 / count) * i + Math.random() * 30,
-        distance: 20 + Math.random() * 15,
-        size: 2 + Math.random() * 2,
-        delay: Math.random() * 0.2,
+        distance: 15 + Math.random() * 10,
+        size: 3 + Math.random() * 3,
+        delay: Math.random() * 0.1,
     }));
 };
 
@@ -32,10 +24,9 @@ export const ActivityIndicator = memo(function ActivityIndicator({
     updateStartedAt,
     className = "",
 }: ActivityIndicatorProps) {
-    const { theme } = useTheme();
-    const isLight = theme === "light";
     const [showParticles, setShowParticles] = useState(false);
     const [prevStatus, setPrevStatus] = useState(status);
+    const [downloadProgress, setDownloadProgress] = useState(0);
 
     const normalizedStatus = (status || "idle").toLowerCase();
 
@@ -43,26 +34,41 @@ export const ActivityIndicator = memo(function ActivityIndicator({
         updateStartedAt &&
         (Date.now() - new Date(updateStartedAt).getTime() > 600000);
 
+    // Simulate download progress for updating status
+    useEffect(() => {
+        if (normalizedStatus === "updating" || normalizedStatus === "downloading" || normalizedStatus === "installing") {
+            const interval = setInterval(() => {
+                setDownloadProgress(prev => {
+                    if (prev >= 100) return 0;
+                    return prev + 25;
+                });
+            }, 800);
+            return () => clearInterval(interval);
+        } else {
+            setDownloadProgress(0);
+        }
+    }, [normalizedStatus]);
+
     useEffect(() => {
         if ((normalizedStatus === "updated" || normalizedStatus === "success") &&
             prevStatus !== normalizedStatus) {
             setShowParticles(true);
-            const timer = setTimeout(() => setShowParticles(false), 1000);
+            const timer = setTimeout(() => setShowParticles(false), 600);
             return () => clearTimeout(timer);
         }
         setPrevStatus(normalizedStatus);
     }, [normalizedStatus, prevStatus]);
 
-    const particles = useMemo(() => generateParticles(16), []);
+    const particles = useMemo(() => generateParticles(8), []);
 
     const getStatusConfig = () => {
         if (isStuck) {
             return {
-                icon: XCircle,
-                color: "text-orange-600",
-                bgColor: isLight ? "bg-white" : "bg-orange-500/20",
-                borderColor: isLight ? "border-2 border-orange-500" : "border-0",
-                glowColor: isLight ? "shadow-[0_2px_10px_rgba(249,115,22,0.4)]" : "shadow-[0_0_20px_rgba(249,115,22,0.5)]",
+                icon: AlertTriangle,
+                color: "text-orange-500",
+                bgColor: "bg-card",
+                borderColor: "border-2 border-orange-500",
+                glowColor: "shadow-[4px_4px_0px_0px_rgba(249,115,22,1)]",
                 label: "Stuck?",
                 type: "stuck",
             };
@@ -74,30 +80,30 @@ export const ActivityIndicator = memo(function ActivityIndicator({
             case "installing":
                 return {
                     icon: Loader,
-                    color: isLight ? "text-blue-600" : "text-cyan-400",
-                    bgColor: isLight ? "bg-gradient-to-br from-blue-50 to-cyan-50" : "bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900",
-                    borderColor: isLight ? "border-2 border-blue-400" : "ring-1 ring-cyan-500/30",
-                    glowColor: isLight ? "shadow-[0_2px_15px_rgba(59,130,246,0.4)]" : "shadow-[0_0_25px_rgba(0,240,255,0.3)]",
+                    color: "text-cyan-400",
+                    bgColor: "bg-black",
+                    borderColor: "border-2 border-cyan-400",
+                    glowColor: "shadow-[4px_4px_0px_0px_rgba(34,211,238,1)]",
                     label: "Updating",
                     type: "updating",
                 };
             case "checking":
                 return {
                     icon: Radio,
-                    color: "text-cyan-600",
-                    bgColor: isLight ? "bg-white" : "bg-cyan-500/20",
-                    borderColor: isLight ? "border-2 border-cyan-500" : "border-0",
-                    glowColor: isLight ? "shadow-[0_2px_10px_rgba(6,182,212,0.3)]" : "shadow-[0_0_20px_rgba(6,182,212,0.4)]",
+                    color: "text-cyan-500",
+                    bgColor: "bg-card",
+                    borderColor: "border-2 border-cyan-500",
+                    glowColor: "shadow-[4px_4px_0px_0px_rgba(6,182,212,1)]",
                     label: "Checking",
                     type: "checking",
                 };
             case "pending":
                 return {
                     icon: Clock,
-                    color: "text-amber-600",
-                    bgColor: isLight ? "bg-white" : "bg-amber-500/20",
-                    borderColor: isLight ? "border-2 border-amber-500" : "border-0",
-                    glowColor: isLight ? "shadow-[0_2px_8px_rgba(245,158,11,0.3)]" : "shadow-[0_0_15px_rgba(245,158,11,0.3)]",
+                    color: "text-amber-500",
+                    bgColor: "bg-card",
+                    borderColor: "border-2 border-amber-500",
+                    glowColor: "shadow-[4px_4px_0px_0px_rgba(245,158,11,1)]",
                     label: "Pending",
                     type: "pending",
                 };
@@ -105,10 +111,10 @@ export const ActivityIndicator = memo(function ActivityIndicator({
             case "success":
                 return {
                     icon: CheckCircle2,
-                    color: isLight ? "text-emerald-600" : "text-emerald-500",
-                    bgColor: isLight ? "bg-white" : "bg-emerald-500/20",
-                    borderColor: isLight ? "border-2 border-emerald-500" : "border-0",
-                    glowColor: isLight ? "shadow-[0_2px_10px_rgba(16,185,129,0.3)]" : "shadow-[0_0_18px_rgba(16,185,129,0.4)]",
+                    color: "text-emerald-500",
+                    bgColor: "bg-card",
+                    borderColor: "border-2 border-emerald-500",
+                    glowColor: "shadow-[4px_4px_0px_0px_rgba(16,185,129,1)]",
                     label: "Updated",
                     type: "success",
                 };
@@ -116,10 +122,10 @@ export const ActivityIndicator = memo(function ActivityIndicator({
             case "error":
                 return {
                     icon: XCircle,
-                    color: isLight ? "text-rose-600" : "text-rose-500",
-                    bgColor: isLight ? "bg-white" : "bg-rose-500/20",
-                    borderColor: isLight ? "border-2 border-rose-500" : "border-0",
-                    glowColor: isLight ? "shadow-[0_2px_10px_rgba(244,63,94,0.3)]" : "shadow-[0_0_18px_rgba(244,63,94,0.3)]",
+                    color: "text-rose-500",
+                    bgColor: "bg-card",
+                    borderColor: "border-2 border-rose-500",
+                    glowColor: "shadow-[4px_4px_0px_0px_rgba(244,63,94,1)]",
                     label: "Failed",
                     type: "failed",
                 };
@@ -127,10 +133,10 @@ export const ActivityIndicator = memo(function ActivityIndicator({
             default:
                 return {
                     icon: Circle,
-                    color: isLight ? "text-slate-500" : "text-muted-foreground",
-                    bgColor: isLight ? "bg-white" : "bg-muted-foreground/10",
-                    borderColor: isLight ? "border-2 border-slate-200" : "border-0",
-                    glowColor: "",
+                    color: "text-foreground",
+                    bgColor: "bg-card",
+                    borderColor: "border-2 border-foreground/50",
+                    glowColor: "shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)]",
                     label: "Idle",
                     type: "idle",
                 };
@@ -140,230 +146,305 @@ export const ActivityIndicator = memo(function ActivityIndicator({
     const config = getStatusConfig();
     const Icon = config.icon;
 
-    const getIconAnimation = () => {
-        switch (config.type) {
-            case "updating":
-                return {};
-            case "pending":
-                return { scale: [1, 1.2, 1, 1.15, 1] };
-            case "success":
-                return { scale: [0.5, 1.2, 1], rotate: [0, 15, -15, 0] };
-            case "failed":
-                return { x: [-3, 3, -2, 2, -1, 1, 0] };
-            case "stuck":
-                return { scale: [1, 1.1, 1] };
-            default:
-                return {};
-        }
-    };
-
-    const getIconTransition = () => {
-        switch (config.type) {
-            case "pending":
-                return { duration: 1.2, repeat: Infinity, times: [0, 0.2, 0.4, 0.5, 1], ease: "easeInOut" as const };
-            case "success":
-                return { duration: 0.6, ease: "backOut" as const };
-            case "failed":
-                return { duration: 0.4, repeat: 2 };
-            case "stuck":
-                return { duration: 1, repeat: Infinity, ease: "easeInOut" as const };
-            default:
-                return {};
-        }
-    };
-
     return (
         <div className={`flex items-center gap-2.5 ${className}`}>
             <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.3 }}
-                className={`relative flex items-center justify-center w-10 h-10 rounded-xl ${config.bgColor} ${config.borderColor} ${config.glowColor} overflow-hidden`}
+                transition={{ duration: 0.1, ease: "linear" }}
+                className={`relative flex items-center justify-center w-10 h-10 ${config.bgColor} ${config.borderColor} ${config.glowColor} overflow-hidden`}
                 title={isStuck ? "This update seems stuck. Try resetting the activity." : config.label}
             >
-                {/* ===== SOLAR SYSTEM for Updating Status ===== */}
+                {/* ===== UPDATING: Terminal Download ===== */}
                 {config.type === "updating" && (
                     <>
-                        {/* Glowing Sun Core */}
-                        <motion.div
-                            className={`absolute w-3 h-3 rounded-full ${isLight ? 'bg-amber-400' : 'bg-yellow-400'}`}
-                            animate={{
-                                scale: [1, 1.2, 1],
-                                boxShadow: [
-                                    "0 0 8px 2px rgba(251,191,36,0.6)",
-                                    "0 0 15px 4px rgba(251,191,36,0.8)",
-                                    "0 0 8px 2px rgba(251,191,36,0.6)"
-                                ]
-                            }}
-                            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                            style={{ zIndex: 10 }}
-                        />
+                        {/* Blocky progress bar background */}
+                        <div className="absolute inset-1 bg-black border border-cyan-400/50" />
 
-                        {/* Orbital Rings (faint) */}
-                        {planets.map((planet, i) => (
-                            <div
-                                key={`ring-${i}`}
-                                className={`absolute rounded-full border ${isLight ? 'border-blue-200/50' : 'border-cyan-500/10'}`}
-                                style={{
-                                    width: planet.orbitRadius * 2,
-                                    height: planet.orbitRadius * 2,
-                                }}
-                            />
-                        ))}
-
-                        {/* Orbiting Planets with Comet Trails */}
-                        {planets.map((planet, i) => (
-                            <motion.div
-                                key={`planet-${i}`}
-                                className="absolute"
-                                style={{ width: planet.orbitRadius * 2, height: planet.orbitRadius * 2 }}
-                                animate={{ rotate: 360 }}
-                                transition={{
-                                    duration: planet.duration,
-                                    repeat: Infinity,
-                                    ease: "linear",
-                                }}
-                            >
-                                {/* Comet Trail */}
-                                {planet.trail && (
-                                    <motion.div
-                                        className={`absolute rounded-full ${planet.color} opacity-30 blur-[1px]`}
-                                        style={{
-                                            width: planet.size * 3,
-                                            height: planet.size,
-                                            top: 0,
-                                            left: '50%',
-                                            transformOrigin: 'left center',
-                                            transform: 'translateX(-100%) rotate(-30deg)',
-                                        }}
-                                    />
-                                )}
-                                {/* Planet */}
-                                <div
-                                    className={`absolute rounded-full ${planet.color} ${planet.glowColor}`}
-                                    style={{
-                                        width: planet.size,
-                                        height: planet.size,
-                                        top: 0,
-                                        left: '50%',
-                                        transform: 'translateX(-50%)',
+                        {/* Progress blocks */}
+                        <div className="absolute inset-1 flex gap-0.5 p-0.5">
+                            {[0, 25, 50, 75].map((threshold, i) => (
+                                <motion.div
+                                    key={i}
+                                    className="flex-1 h-full"
+                                    animate={{
+                                        backgroundColor: downloadProgress > threshold ? "#22d3ee" : "#0f172a",
                                     }}
+                                    transition={{ duration: 0, ease: "linear" }}
                                 />
-                            </motion.div>
-                        ))}
+                            ))}
+                        </div>
 
-                        {/* Shooting Star / Meteor (occasional) */}
+                        {/* Percentage text */}
+                        <motion.span
+                            className="absolute font-mono text-[10px] font-black text-cyan-400 z-10"
+                            animate={{ opacity: [1, 0.5, 1] }}
+                            transition={{ duration: 0.3, repeat: Infinity, ease: "linear" }}
+                        >
+                            {downloadProgress}%
+                        </motion.span>
+
+                        {/* Scanline effect */}
                         <motion.div
-                            className={`absolute w-1 h-0.5 ${isLight ? 'bg-blue-400' : 'bg-cyan-300'} rounded-full`}
-                            initial={{ x: -20, y: 20, opacity: 0 }}
-                            animate={{
-                                x: [null, 25],
-                                y: [null, -25],
-                                opacity: [0, 1, 1, 0],
-                            }}
-                            transition={{
-                                duration: 0.8,
-                                repeat: Infinity,
-                                repeatDelay: 4,
-                                ease: "easeOut"
-                            }}
-                            style={{
-                                boxShadow: isLight
-                                    ? "0 0 4px 1px rgba(59,130,246,0.6)"
-                                    : "0 0 6px 2px rgba(103,232,249,0.6)",
-                                zIndex: 5
-                            }}
+                            className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-400/20 to-transparent h-2"
+                            animate={{ y: [-10, 50] }}
+                            transition={{ duration: 0.5, repeat: Infinity, ease: "linear" }}
                         />
-
-                        {/* Starfield Background (twinkling) */}
-                        {[...Array(6)].map((_, i) => (
-                            <motion.div
-                                key={`star-${i}`}
-                                className={`absolute w-0.5 h-0.5 rounded-full ${isLight ? 'bg-blue-300' : 'bg-white'}`}
-                                style={{
-                                    top: `${15 + Math.random() * 70}%`,
-                                    left: `${15 + Math.random() * 70}%`,
-                                }}
-                                animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.2, 0.8] }}
-                                transition={{
-                                    duration: 1 + Math.random() * 2,
-                                    repeat: Infinity,
-                                    delay: Math.random() * 2,
-                                    ease: "easeInOut"
-                                }}
-                            />
-                        ))}
                     </>
                 )}
 
-                {/* Particle Explosion for Success */}
-                <AnimatePresence>
-                    {showParticles && particles.map((p) => (
-                        <motion.div
-                            key={p.id}
-                            className="absolute rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400"
-                            style={{ width: p.size, height: p.size, boxShadow: "0 0 4px rgba(16,185,129,0.6)" }}
-                            initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
-                            animate={{
-                                x: Math.cos(p.angle * Math.PI / 180) * p.distance,
-                                y: Math.sin(p.angle * Math.PI / 180) * p.distance,
-                                opacity: 0,
-                                scale: 0,
-                            }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.8, delay: p.delay, ease: "easeOut" }}
-                        />
-                    ))}
-                </AnimatePresence>
-
-                {/* Radar Sweep for Checking */}
+                {/* ===== CHECKING: Ping Pulse ===== */}
                 {config.type === "checking" && (
-                    <motion.div
-                        className={`absolute inset-0 rounded-xl border-t-2 ${isLight ? 'border-cyan-500' : 'border-cyan-400'}`}
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                    />
-                )}
+                    <>
+                        {/* Expanding square borders */}
+                        {[0, 1, 2].map((i) => (
+                            <motion.div
+                                key={i}
+                                className="absolute border-2 border-cyan-500"
+                                initial={{ width: 8, height: 8, opacity: 1 }}
+                                animate={{
+                                    width: [8, 40],
+                                    height: [8, 40],
+                                    opacity: [1, 0],
+                                }}
+                                transition={{
+                                    duration: 1,
+                                    repeat: Infinity,
+                                    delay: i * 0.33,
+                                    ease: "linear",
+                                }}
+                            />
+                        ))}
 
-                {/* Glitch overlay for Failed */}
-                {config.type === "failed" && (
-                    <motion.div
-                        className="absolute inset-0 rounded-xl bg-rose-500/20"
-                        animate={{ opacity: [0, 0.5, 0, 0.3, 0] }}
-                        transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 2 }}
-                    />
-                )}
-
-                {/* Icon with morphing animation (hidden during updating = solar system mode) */}
-                {config.type !== "updating" && (
-                    <AnimatePresence mode="popLayout">
+                        {/* Center dot */}
                         <motion.div
-                            key={normalizedStatus}
-                            layoutId="activity-icon"
-                            initial={{ scale: 0, rotate: -180 }}
-                            animate={{ scale: 1, rotate: 0, ...getIconAnimation() }}
-                            exit={{ scale: 0, rotate: 180 }}
-                            transition={{ scale: { duration: 0.3, ease: "backOut" }, ...getIconTransition() }}
-                            className="relative z-10"
+                            className="absolute w-2 h-2 bg-cyan-500"
+                            animate={{
+                                backgroundColor: ["#06b6d4", "#ffffff", "#06b6d4"],
+                            }}
+                            transition={{ duration: 0.5, repeat: Infinity, ease: "linear" }}
+                        />
+
+                        {/* Scanline */}
+                        <motion.div
+                            className="absolute inset-x-0 h-0.5 bg-cyan-400"
+                            animate={{ top: ["0%", "100%"] }}
+                            transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
+                        />
+                    </>
+                )}
+
+                {/* ===== PENDING: Blinking Cursor ===== */}
+                {config.type === "pending" && (
+                    <>
+                        {/* Blinking icon */}
+                        <motion.div
+                            animate={{ opacity: [1, 0, 1, 0, 1] }}
+                            transition={{
+                                duration: 1.5,
+                                repeat: Infinity,
+                                times: [0, 0.25, 0.5, 0.75, 1],
+                                ease: "linear"
+                            }}
                         >
-                            <Icon className={`h-4.5 w-4.5 ${config.color}`} strokeWidth={isLight ? 2.5 : 2} />
+                            <Icon className={`h-5 w-5 ${config.color}`} strokeWidth={3} />
                         </motion.div>
-                    </AnimatePresence>
+
+                        {/* Blinking cursor */}
+                        <motion.div
+                            className="absolute bottom-1 right-1 w-1.5 h-3 bg-amber-500"
+                            animate={{ opacity: [1, 0] }}
+                            transition={{ duration: 0.5, repeat: Infinity, ease: "linear" }}
+                        />
+
+                        {/* Border flash */}
+                        <motion.div
+                            className="absolute inset-0 border-2 border-amber-500"
+                            animate={{
+                                borderColor: ["#f59e0b", "#000000", "#f59e0b"],
+                            }}
+                            transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
+                        />
+                    </>
+                )}
+
+                {/* ===== SUCCESS: Stamp Effect ===== */}
+                {config.type === "success" && (
+                    <>
+                        {/* White flash on transition */}
+                        <AnimatePresence>
+                            {showParticles && (
+                                <motion.div
+                                    className="absolute inset-0 bg-white"
+                                    initial={{ opacity: 1 }}
+                                    animate={{ opacity: 0 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.1, ease: "linear" }}
+                                />
+                            )}
+                        </AnimatePresence>
+
+                        {/* Stamp icon - slams in from above */}
+                        <motion.div
+                            initial={{ y: -20, scale: 1.5 }}
+                            animate={{ y: 0, scale: 1 }}
+                            transition={{ duration: 0.1, ease: "linear" }}
+                        >
+                            <Icon className={`h-5 w-5 ${config.color}`} strokeWidth={3} />
+                        </motion.div>
+
+                        {/* Square particles burst */}
+                        <AnimatePresence>
+                            {showParticles && particles.map((p) => (
+                                <motion.div
+                                    key={p.id}
+                                    className="absolute bg-emerald-500"
+                                    style={{ width: p.size, height: p.size }}
+                                    initial={{ x: 0, y: 0, opacity: 1 }}
+                                    animate={{
+                                        x: Math.cos(p.angle * Math.PI / 180) * p.distance,
+                                        y: Math.sin(p.angle * Math.PI / 180) * p.distance,
+                                        opacity: 0,
+                                    }}
+                                    transition={{ duration: 0.3, delay: p.delay, ease: "linear" }}
+                                />
+                            ))}
+                        </AnimatePresence>
+                    </>
+                )}
+
+                {/* ===== FAILED: Error Static ===== */}
+                {config.type === "failed" && (
+                    <>
+                        {/* Screen tear effect - split icon */}
+                        <motion.div
+                            className="absolute"
+                            animate={{
+                                x: [-2, 2, -1, 3, 0, -2, 1, 0],
+                                y: [0, -1, 1, 0, -1, 1, 0, 0],
+                            }}
+                            transition={{ duration: 0.3, repeat: Infinity, ease: "linear" }}
+                        >
+                            <Icon className={`h-5 w-5 ${config.color}`} strokeWidth={3} />
+                        </motion.div>
+
+                        {/* Static noise overlay */}
+                        <motion.div
+                            className="absolute inset-0 opacity-30"
+                            style={{
+                                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+                            }}
+                            animate={{ opacity: [0.2, 0.5, 0.1, 0.4, 0.2] }}
+                            transition={{ duration: 0.2, repeat: Infinity, ease: "linear" }}
+                        />
+
+                        {/* Red flash */}
+                        <motion.div
+                            className="absolute inset-0 bg-rose-500"
+                            animate={{ opacity: [0, 0.3, 0, 0.2, 0] }}
+                            transition={{ duration: 0.4, repeat: Infinity, ease: "linear" }}
+                        />
+
+                        {/* Horizontal tear line */}
+                        <motion.div
+                            className="absolute inset-x-0 h-0.5 bg-rose-500"
+                            animate={{
+                                top: ["30%", "70%", "40%", "60%", "50%"],
+                                opacity: [1, 0, 1, 0, 1],
+                            }}
+                            transition={{ duration: 0.3, repeat: Infinity, ease: "linear" }}
+                        />
+                    </>
+                )}
+
+                {/* ===== STUCK: Hazard Stripes ===== */}
+                {config.type === "stuck" && (
+                    <>
+                        {/* Animated diagonal stripes */}
+                        <motion.div
+                            className="absolute inset-0"
+                            style={{
+                                backgroundImage: `repeating-linear-gradient(
+                                    45deg,
+                                    #000 0px,
+                                    #000 4px,
+                                    #f59e0b 4px,
+                                    #f59e0b 8px
+                                )`,
+                            }}
+                            animate={{ backgroundPosition: ["0px 0px", "16px 16px"] }}
+                            transition={{ duration: 0.5, repeat: Infinity, ease: "linear" }}
+                        />
+
+                        {/* Center icon with flash */}
+                        <motion.div
+                            className="relative z-10 bg-black p-1"
+                            animate={{ opacity: [1, 0.5, 1] }}
+                            transition={{ duration: 0.5, repeat: Infinity, ease: "linear" }}
+                        >
+                            <Icon className={`h-4 w-4 ${config.color}`} strokeWidth={3} />
+                        </motion.div>
+
+                        {/* Border flash */}
+                        <motion.div
+                            className="absolute inset-0 border-2"
+                            animate={{
+                                borderColor: ["#f59e0b", "#000000", "#f59e0b"],
+                            }}
+                            transition={{ duration: 0.4, repeat: Infinity, ease: "linear" }}
+                        />
+                    </>
+                )}
+
+                {/* ===== IDLE: Standby Mode ===== */}
+                {config.type === "idle" && (
+                    <>
+                        {/* CRT scanlines */}
+                        <div
+                            className="absolute inset-0 opacity-20 pointer-events-none"
+                            style={{
+                                backgroundImage: `repeating-linear-gradient(
+                                    0deg,
+                                    transparent,
+                                    transparent 2px,
+                                    rgba(0,0,0,0.3) 2px,
+                                    rgba(0,0,0,0.3) 4px
+                                )`,
+                            }}
+                        />
+
+                        {/* Dimmed icon */}
+                        <motion.div
+                            animate={{ opacity: [0.6, 0.4, 0.6] }}
+                            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                        >
+                            <Icon className={`h-5 w-5 ${config.color} opacity-50`} strokeWidth={2} />
+                        </motion.div>
+
+                        {/* Blinking underscore cursor */}
+                        <motion.div
+                            className="absolute bottom-1 right-1 w-1.5 h-0.5 bg-foreground/50"
+                            animate={{ opacity: [1, 0] }}
+                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        />
+                    </>
                 )}
             </motion.div>
 
+            {/* Label */}
             <motion.div
                 className="flex flex-col"
-                initial={{ opacity: 0, x: -10 }}
+                initial={{ opacity: 0, x: -5 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: 0.1 }}
+                transition={{ duration: 0.1, ease: "linear" }}
             >
                 <AnimatePresence mode="wait">
                     <motion.span
                         key={config.label}
-                        initial={{ opacity: 0, y: -5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 5 }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.1, ease: "linear" }}
                         className={`text-xs font-black uppercase tracking-tighter ${config.color}`}
                     >
                         {config.label}
@@ -371,9 +452,9 @@ export const ActivityIndicator = memo(function ActivityIndicator({
                 </AnimatePresence>
                 {isStuck && (
                     <motion.span
-                        className={`text-[9px] font-black ${isLight ? 'text-orange-600' : 'text-orange-500/70'}`}
-                        animate={{ opacity: [1, 0.5, 1] }}
-                        transition={{ duration: 0.8, repeat: Infinity }}
+                        className="text-[9px] font-black text-orange-500"
+                        animate={{ opacity: [1, 0, 1] }}
+                        transition={{ duration: 0.5, repeat: Infinity, ease: "linear" }}
                     >
                         RESET NEEDED
                     </motion.span>

@@ -139,30 +139,40 @@ export function Header() {
         </Link>
       </div>
       <div className="flex-1" />
-      <nav className="hidden lg:flex items-center gap-1 mx-4">
+      <nav className="hidden lg:flex items-center gap-2 mx-4">
         {NAV_ITEMS.map((item) => {
           const isActive = location === item.href;
           return (
             <Link key={item.href} href={item.href}>
               <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ x: -2, y: -2 }}
+                whileTap={{ x: 0, y: 0 }}
                 className={cn(
-                  "flex items-center gap-2 px-3 py-1.5 rounded-xl cursor-pointer transition-all",
+                  "relative flex items-center gap-2 px-4 py-2 cursor-pointer transition-all font-black uppercase text-[11px] tracking-wider border-2",
                   isActive
-                    ? "bg-primary/10 text-primary ring-1 ring-primary/20 shadow-[0_0_10px_rgba(0,240,255,0.15)]"
-                    : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
+                    ? "bg-primary text-primary-foreground border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]"
+                    : "bg-card text-foreground border-foreground/30 hover:border-foreground hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] dark:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.5)]"
                 )}
               >
-                <item.icon className={cn("h-4 w-4", isActive && "text-accent")} />
-                <span className="text-[11px] font-bold uppercase tracking-wider">{t(item.labelKey)}</span>
+                <div className={cn(
+                  "flex items-center justify-center w-6 h-6 border-2",
+                  isActive
+                    ? "bg-black dark:bg-white border-black dark:border-white"
+                    : "bg-foreground/10 border-foreground/30"
+                )}>
+                  <item.icon className={cn(
+                    "h-3.5 w-3.5",
+                    isActive ? "text-primary" : "text-foreground"
+                  )} strokeWidth={3} />
+                </div>
+                <span>{t(item.labelKey)}</span>
                 {isActive && (
                   <motion.div
                     layoutId="headerNavIndicator"
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    className="absolute -bottom-1 left-2 right-2 h-1 bg-black dark:bg-white"
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: 1 }}
+                    transition={{ duration: 0.1, ease: "linear" }}
                   />
                 )}
               </motion.div>

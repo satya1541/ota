@@ -1,32 +1,9 @@
 import { memo } from "react";
-import { useTheme } from "@/lib/theme";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 export const BackgroundImage = memo(function BackgroundImage() {
-  const { theme } = useTheme();
-  const isMobile = useIsMobile();
-
   return (
     <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none bg-background">
-      {/* Video Background Layer - Disabled on Mobile for performance */}
-      {!isMobile && (
-        <div className="absolute inset-0 z-0">
-          <video
-            key={theme}
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="h-full w-full object-cover transition-opacity duration-1000"
-            style={{ opacity: theme === "light" ? 0.3 : 0.4 }}
-          >
-            <source
-              src={`/videos/${theme === "light" ? "white.mp4" : "black.mp4"}`}
-              type="video/mp4"
-            />
-          </video>
-        </div>
-      )}
+
 
       {/* Deep Space Base Gradient */}
       <div

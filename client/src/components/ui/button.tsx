@@ -5,30 +5,30 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-bold transition-all duration-300 focus-visible:outline-none focus-visible:ring-0 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.98] select-none touch-none relative [border:0] [transition:0.3s_linear,_color_0s,_background-color_0s]",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-black transition-all focus-visible:outline-none focus-visible:ring-0 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 select-none touch-none relative neo-border active:translate-x-[2px] active:translate-y-[2px] active:shadow-none hover:-translate-y-0.5 hover:translate-x-0.5",
   {
     variants: {
       variant: {
         default:
-          "text-primary [--b:3px] [--s:0.45em] [--color:hsl(var(--primary))] [padding:calc(0.5em+var(--s))_calc(0.9em+var(--s))] [--_p:var(--s)] [background:conic-gradient(from_90deg_at_var(--b)_var(--b),transparent_90deg,var(--color)_0)_var(--_p)_var(--_p)/calc(100%-var(--b)-2*var(--_p))_calc(100%-var(--b)-2*var(--_p))] [outline:var(--b)_solid_transparent] [outline-offset:0.6em] hover:[--_p:0px] hover:[outline-color:var(--color)] hover:[outline-offset:0.05em] active:[background:var(--color)] active:text-primary-foreground [text-shadow:0_0_8px_hsl(var(--primary)/0.4)] dark:[text-shadow:0_0_8px_rgba(0,240,255,0.6)]",
+          "bg-primary text-primary-foreground neo-shadow hover:bg-primary/90",
         destructive:
-          "text-destructive [--b:3px] [--s:0.45em] [--color:hsl(var(--destructive))] [padding:calc(0.5em+var(--s))_calc(0.9em+var(--s))] [--_p:var(--s)] [background:conic-gradient(from_90deg_at_var(--b)_var(--b),transparent_90deg,var(--color)_0)_var(--_p)_var(--_p)/calc(100%-var(--b)-2*var(--_p))_calc(100%-var(--b)-2*var(--_p))] [outline:var(--b)_solid_transparent] [outline-offset:0.6em] hover:[--_p:0px] hover:[outline-color:var(--color)] hover:[outline-offset:0.05em] active:[background:var(--color)] active:text-destructive-foreground [text-shadow:0_0_8px_rgba(var(--destructive),0.6)]",
+          "bg-destructive text-destructive-foreground neo-shadow hover:bg-destructive/90",
         outline:
-          "text-foreground [--b:2px] [--s:0.4em] [--color:hsl(var(--border))] [padding:calc(0.4em+var(--s))_calc(0.8em+var(--s))] [--_p:var(--s)] [background:conic-gradient(from_90deg_at_var(--b)_var(--b),transparent_90deg,hsl(var(--border))_0)_var(--_p)_var(--_p)/calc(100%-var(--b)-2*var(--_p))_calc(100%-var(--b)-2*var(--_p))] [outline:var(--b)_solid_transparent] [outline-offset:0.5em] hover:[--_p:0px] hover:text-foreground hover:[outline-color:hsl(var(--border))] hover:[outline-offset:0.05em] active:[background:hsl(var(--secondary))] active:text-foreground",
+          "bg-background text-foreground neo-shadow hover:bg-accent hover:text-accent-foreground",
         secondary:
-          "text-foreground/80 [--b:3px] [--s:0.45em] [--color:hsl(var(--secondary))] [padding:calc(0.5em+var(--s))_calc(0.9em+var(--s))] [--_p:var(--s)] [background:conic-gradient(from_90deg_at_var(--b)_var(--b),transparent_90deg,var(--color)_0)_var(--_p)_var(--_p)/calc(100%-var(--b)-2*var(--_p))_calc(100%-var(--b)-2*var(--_p))] [outline:var(--b)_solid_transparent] [outline-offset:0.6em] hover:[--_p:0px] hover:[outline-color:var(--color)] hover:[outline-offset:0.05em] active:[background:var(--color)] active:text-secondary-foreground [text-shadow:0_0_8px_hsl(var(--secondary)/0.3)]",
+          "bg-secondary text-secondary-foreground neo-shadow hover:bg-secondary/80",
         ghost:
-          "text-foreground/70 hover:text-foreground hover:bg-accent/10 px-4 py-2",
+          "border-transparent shadow-none hover:bg-accent hover:text-accent-foreground active:translate-x-0 active:translate-y-0",
         link:
-          "text-primary underline-offset-4 hover:underline px-2 py-1 [text-shadow:0_0_6px_rgba(0,240,255,0.4)]",
+          "text-primary underline-offset-4 hover:underline border-none shadow-none active:translate-x-0 active:translate-y-0 p-0 h-auto",
         neon:
-          "text-primary [--b:4px] [--s:0.5em] [--color:hsl(var(--primary))] [padding:calc(0.5em+var(--s))_calc(0.9em+var(--s))] [--_p:var(--s)] [background:conic-gradient(from_90deg_at_var(--b)_var(--b),transparent_90deg,var(--color)_0)_var(--_p)_var(--_p)/calc(100%-var(--b)-2*var(--_p))_calc(100%-var(--b)-2*var(--_p))] [outline:var(--b)_solid_transparent] [outline-offset:0.7em] hover:[--_p:0px] hover:[outline-color:var(--color)] hover:[outline-offset:0.05em] active:[background:var(--color)] active:text-primary-foreground [text-shadow:0_0_12px_hsl(var(--primary)/0.6)] [box-shadow:0_0_20px_hsl(var(--primary)/0.2)] hover:[box-shadow:0_0_35px_hsl(var(--primary)/0.4)]",
+          "bg-background text-foreground neo-border box-shadow-[0_0_10px_var(--primary)] text-primary hover:shadow-[0_0_20px_var(--primary)] hover:border-primary",
       },
       size: {
-        default: "text-sm",
-        sm: "text-xs",
-        lg: "text-base",
-        icon: "h-9 w-9 p-2",
+        default: "h-10 px-4 py-2",
+        sm: "h-9 rounded-md px-3",
+        lg: "h-11 rounded-md px-8",
+        icon: "h-10 w-10",
       },
     },
     defaultVariants: {

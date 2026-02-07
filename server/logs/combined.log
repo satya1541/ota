@@ -637,3 +637,52 @@
 {"level":"info","message":"4:58:23 PM [express] serving on port 5000","service":"ota-server","timestamp":"2026-02-06 16:58:23"}
 {"environment":"development","level":"info","message":"OTA Server started","port":5000,"service":"ota-server","timestamp":"2026-02-06 16:58:23"}
 {"intervalMs":60000,"level":"info","message":"Starting rollback protection watchdog","service":"ota-server","timestamp":"2026-02-06 17:11:00"}
+{"intervalMs":60000,"level":"info","message":"Starting rollback protection watchdog","service":"ota-server","timestamp":"2026-02-07 11:28:48"}
+{"level":"info","message":"11:28:49 AM [express] serving on port 5000","service":"ota-server","timestamp":"2026-02-07 11:28:49"}
+{"environment":"development","level":"info","message":"OTA Server started","port":5000,"service":"ota-server","timestamp":"2026-02-07 11:28:49"}
+{"intervalMs":60000,"level":"info","message":"Starting rollback protection watchdog","service":"ota-server","timestamp":"2026-02-07 11:35:42"}
+{"level":"info","message":"11:35:47 AM [express] serving on port 5000","service":"ota-server","timestamp":"2026-02-07 11:35:47"}
+{"environment":"development","level":"info","message":"OTA Server started","port":5000,"service":"ota-server","timestamp":"2026-02-07 11:35:47"}
+{"intervalMs":60000,"level":"info","message":"Starting rollback protection watchdog","service":"ota-server","timestamp":"2026-02-07 11:58:23"}
+{"level":"info","message":"11:58:29 AM [express] serving on port 5000","service":"ota-server","timestamp":"2026-02-07 11:58:29"}
+{"environment":"development","level":"info","message":"OTA Server started","port":5000,"service":"ota-server","timestamp":"2026-02-07 11:58:29"}
+{"intervalMs":60000,"level":"info","message":"Starting rollback protection watchdog","service":"ota-server","timestamp":"2026-02-07 12:00:28"}
+{"level":"info","message":"12:00:31 PM [express] serving on port 5000","service":"ota-server","timestamp":"2026-02-07 12:00:31"}
+{"environment":"development","level":"info","message":"OTA Server started","port":5000,"service":"ota-server","timestamp":"2026-02-07 12:00:31"}
+{"intervalMs":60000,"level":"info","message":"Starting rollback protection watchdog","service":"ota-server","timestamp":"2026-02-07 12:01:31"}
+{"level":"info","message":"12:01:33 PM [express] serving on port 5000","service":"ota-server","timestamp":"2026-02-07 12:01:33"}
+{"environment":"development","level":"info","message":"OTA Server started","port":5000,"service":"ota-server","timestamp":"2026-02-07 12:01:33"}
+{"intervalMs":60000,"level":"info","message":"Starting rollback protection watchdog","service":"ota-server","timestamp":"2026-02-07 12:07:51"}
+{"level":"info","message":"12:07:54 PM [express] serving on port 5000","service":"ota-server","timestamp":"2026-02-07 12:07:54"}
+{"environment":"development","level":"info","message":"OTA Server started","port":5000,"service":"ota-server","timestamp":"2026-02-07 12:07:54"}
+{"intervalMs":60000,"level":"info","message":"Starting rollback protection watchdog","service":"ota-server","timestamp":"2026-02-07 12:14:12"}
+{"level":"info","message":"12:14:13 PM [express] serving on port 5000","service":"ota-server","timestamp":"2026-02-07 12:14:13"}
+{"environment":"development","level":"info","message":"OTA Server started","port":5000,"service":"ota-server","timestamp":"2026-02-07 12:14:13"}
+{"intervalMs":60000,"level":"info","message":"Starting rollback protection watchdog","service":"ota-server","timestamp":"2026-02-07 12:24:38"}
+{"level":"info","message":"12:24:39 PM [express] serving on port 5000","service":"ota-server","timestamp":"2026-02-07 12:24:39"}
+{"environment":"development","level":"info","message":"OTA Server started","port":5000,"service":"ota-server","timestamp":"2026-02-07 12:24:39"}
+{"filename":"default_v0.0.0.ino.bin","ip":"127.0.0.1","level":"info","message":"Firmware file download","service":"ota-server","timestamp":"2026-02-07 12:25:56"}
+{"intervalMs":60000,"level":"info","message":"Starting rollback protection watchdog","service":"ota-server","timestamp":"2026-02-07 12:40:35"}
+{"level":"info","message":"12:40:36 PM [express] serving on port 5000","service":"ota-server","timestamp":"2026-02-07 12:40:36"}
+{"environment":"development","level":"info","message":"OTA Server started","port":5000,"service":"ota-server","timestamp":"2026-02-07 12:40:36"}
+{"deviceId":"d0d82249-eb8c-11f0-8b0a-0a930a0bad3f","level":"info","macAddress":"3C8A1F3B3C44","message":"Starting update for device 3C8A1F3B3C44 to version v1.0.1","service":"update-queue","timestamp":"2026-02-07 12:41:01","version":"v1.0.1"}
+{"deviceId":"d0d82249-eb8c-11f0-8b0a-0a930a0bad3f","level":"info","macAddress":"3C8A1F3B3C44","message":"Successfully queued update for device 3C8A1F3B3C44","service":"update-queue","timestamp":"2026-02-07 12:41:01","version":"v1.0.1"}
+{"deviceCount":1,"deviceIds":["3C8A1F3B3C44"],"event":"deploy","level":"info","message":"Deployment scheduled","scheduledBy":"admin","service":"ota-server","timestamp":"2026-02-07 12:41:01","version":"v1.0.1"}
+{"deviceCount":1,"level":"info","message":"Deployment initiated","queueStatus":{"activeUpdates":[],"pending":0,"size":0},"service":"ota-server","timestamp":"2026-02-07 12:41:01","version":"v1.0.1"}
+{"currentVersion":"v0.0.0","event":"ota_check","level":"info","mac":"3C8A1F3B3C44","message":"OTA Check","service":"ota-server","targetVersion":"v1.0.1","timestamp":"2026-02-07 12:41:07","updateAvailable":true}
+{"currentVersion":"v0.0.0","event":"ota_check","level":"info","mac":"3C8A1F3B3C44","message":"OTA Check","service":"ota-server","targetVersion":"v1.0.1","timestamp":"2026-02-07 12:41:07","updateAvailable":true}
+{"filename":"default_v1.0.1.ino.bin","firmwareId":8,"level":"info","message":"Firmware download","service":"ota-server","timestamp":"2026-02-07 12:41:08","version":"v1.0.1"}
+{"currentVersion":"v1.0.1","event":"ota_check","level":"info","mac":"3C8A1F3B3C44","message":"OTA Check","service":"ota-server","targetVersion":"v1.0.1","timestamp":"2026-02-07 12:41:30","updateAvailable":false}
+{"level":"info","macAddress":"3C8A1F3B3C44","message":"Device activity reset","previousStatus":"updated","service":"ota-server","timestamp":"2026-02-07 12:41:36"}
+{"deviceId":"d0d82249-eb8c-11f0-8b0a-0a930a0bad3f","level":"info","macAddress":"3C8A1F3B3C44","message":"Starting update for device 3C8A1F3B3C44 to version v0.0.0","service":"update-queue","timestamp":"2026-02-07 12:41:45","version":"v0.0.0"}
+{"deviceId":"d0d82249-eb8c-11f0-8b0a-0a930a0bad3f","level":"info","macAddress":"3C8A1F3B3C44","message":"Successfully queued update for device 3C8A1F3B3C44","service":"update-queue","timestamp":"2026-02-07 12:41:45","version":"v0.0.0"}
+{"deviceCount":1,"deviceIds":["3C8A1F3B3C44"],"event":"deploy","level":"info","message":"Deployment scheduled","scheduledBy":"admin","service":"ota-server","timestamp":"2026-02-07 12:41:45","version":"v0.0.0"}
+{"deviceCount":1,"level":"info","message":"Deployment initiated","queueStatus":{"activeUpdates":[],"pending":0,"size":0},"service":"ota-server","timestamp":"2026-02-07 12:41:45","version":"v0.0.0"}
+{"currentVersion":"v1.0.1","event":"ota_check","level":"info","mac":"3C8A1F3B3C44","message":"OTA Check","service":"ota-server","targetVersion":"v0.0.0","timestamp":"2026-02-07 12:41:51","updateAvailable":true}
+{"currentVersion":"v1.0.1","event":"ota_check","level":"info","mac":"3C8A1F3B3C44","message":"OTA Check","service":"ota-server","targetVersion":"v0.0.0","timestamp":"2026-02-07 12:41:51","updateAvailable":true}
+{"filename":"default_v0.0.0.ino.bin","firmwareId":9,"level":"info","message":"Firmware download","service":"ota-server","timestamp":"2026-02-07 12:41:52","version":"v0.0.0"}
+{"currentVersion":"v0.0.0","event":"ota_check","level":"info","mac":"3C8A1F3B3C44","message":"OTA Check","service":"ota-server","targetVersion":"v0.0.0","timestamp":"2026-02-07 12:42:01","updateAvailable":false}
+{"level":"info","macAddress":"3C8A1F3B3C44","message":"Device activity reset","previousStatus":"updated","service":"ota-server","timestamp":"2026-02-07 12:42:11"}
+{"intervalMs":60000,"level":"info","message":"Starting rollback protection watchdog","service":"ota-server","timestamp":"2026-02-07 13:00:22"}
+{"level":"info","message":"1:00:23 PM [express] serving on port 5000","service":"ota-server","timestamp":"2026-02-07 13:00:23"}
+{"environment":"development","level":"info","message":"OTA Server started","port":5000,"service":"ota-server","timestamp":"2026-02-07 13:00:23"}

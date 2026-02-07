@@ -1,0 +1,156 @@
+# Universal OTA Platform: API Reference Guide
+
+## Introduction for Non-Technical Users
+This document lists all the ways the "Frontend" (Dashboard) and "Devices" (Physical Hardware) talk to the "Backend" (Server). 
+
+Think of an **API (Application Programming Interface)** as a menu of commands the system understands. 
+- **GET**: "Show me something" (Read)
+- **POST**: "Create something" or "Do something" (Write/Execute)
+- **PUT**: "Update something" (Edit)
+- **DELETE**: "Remove something" (Delete)
+
+---
+
+## 1. Authentication (Logging In)
+**Goal:** Manage user access to the system.
+
+| Action Type | Command (Endpoint) | What It Does (Simple English) | Technical Inputs |
+|:--- | :--- | :--- | :--- |
+| **READ** (GET) | `/api/auth/me` | **Check who is logged in.** Verifies if the current user session is valid. | `?userId=...` |
+| **DO** (POST) | `/api/auth/login` | **Log in.** Takes a PIN code to unlock admin access. | Body: `{ pin }` |
+| **DO** (POST) | `/api/auth/register` | **Create a new user.** Adds a new admin account with a PIN. | Body: `{ pin }` |
+
+---
+
+## 2. Health & System Status
+**Goal:** Check if the server is running and healthy.
+
+| Action Type | Command (Endpoint) | What It Does (Simple English) |
+|:--- | :--- | :--- |
+| **READ** (GET) | `/api/health` | **Server Checkup.** Asks "Are you awake?" Returns uptime and timestamp. |
+| **READ** (GET) | `/api/status` | **Dashboard Overview.** Returns numbers for total devices, online count, failures, etc. |
+
+---
+
+## 3. Device Management
+**Goal:** Add, view, edit, and control the physical IoT devices.
+
+| Action Type | Command (Endpoint) | What It Does (Simple English) | Technical Inputs |
+|:--- | :--- | :--- | :--- |
+| **READ** (GET) | `/api/devices` | **List all devices.** Shows every registered device. | - |
+| **READ** (GET) | `/api/devices/:id` | **View one device.** Get details for a specific ID. | - |
+| **DO** (POST) | `/api/devices` | **Register Device.** Adds a new device to the system manually. | Name, MAC Address, Group |
+| **EDIT** (PUT) | `/api/devices/:id` | **Update Device.** Change a device's name or group. | Name, Group |
+| **EDIT** (PUT) | `/api/devices/:id/location` | **Update Location.** Set the GPS coordinates for the map. | Latitude, Longitude |
+| **REMOVE** (DELETE) | `/api/devices/:id` | **Delete Device.** Remove a device from the system (requires a reason). | Reason for deletion |
+| **READ** (GET) | `/api/devices/:mac/commands` | **View Command History.** See past commands sent to a device. | - |
+| **DO** (POST) | `/api/devices/:mac/commands` | **Send Command.** Tell a device to Reboot, Reset, etc. | Command Name |
+
+---
+
+## 4. Firmware Management
+**Goal:** Upload and manage the software updates files (.bin) that go onto the devices.
+
+| Action Type | Command (Endpoint) | What It Does (Simple English) | Technical Inputs |
+|:--- | :--- | :--- | :--- |
+| **READ** (GET) | `/api/firmware` | **List Firmware.** Show all uploaded versions. | - |
+| **READ** (GET) | `/api/firmware/diff` | **Compare Versions.** Check differences between two files. | Versions A & B |
+| **READ** (GET) | `/api/firmware/:version` | **View Details.** Get info on a specific version. | - |
+| **DO** (POST) | `/api/firmware/upload` | **Upload New File.** Send a new .bin file to the server. | File, Version, Desc |
+| **REMOVE** (DELETE) | `/api/firmware/:version` | **Delete Firmware.** Remove a version file forever. | - |
+| **READ** (GET) | `/api/firmware/:id/download` | **Download File.** Download the .bin file to your computer. | - |
+
+---
+
+## 5. Deployment & Rollouts
+**Goal:** Send updates to devices, either all at once or in stages.
+
+| Action Type | Command (Endpoint) | What It Does (Simple English) | Technical Inputs |
+|:--- | :--- | :--- | :--- |
+| **DO** (POST) | `/api/deploy` | **Deploy Update.** Send a specific version to a list of devices. | List of Device IDs, Version |
+| **DO** (POST) | `/api/reset` | **Reset Status.** Clear "Failed" or "Pending" states if a device is stuck. | List of Device IDs |
+| **DO** (POST) | `/api/rollback/:mac` | **Emergency Rollback.** Force a device to go back to its previous version. | MAC Address |
+| **DO** (POST) | `/api/reset-activity/:mac` | **Clear Activity.** Reset a single device's busy status. | MAC Address |
+| **READ** (GET) | `/api/queue/status` | **Check Queue.** See how many updates are waiting to run. | - |
+
+### Staged Rollouts (Phased Updates)
+**Goal:** Update devices gradually (e.g., 5% -> 25% -> 100%) to catch bugs early.
+
+| Action Type | Command (Endpoint) | What It Does (Simple English) |
+|:--- | :--- | :--- |
+| **READ** (GET) | `/api/rollouts` | **List Rollouts.** Show active and past phased deployments. |
+| **DO** (POST) | `/api/rollouts` | **Start Rollout.** Begin a new phased update. |
+| **DO** (POST) | `/api/rollouts/:id/advance` | **Next Stage.** Manually move to the next percentage group. |
+| **DO** (POST) | `/api/rollouts/:id/pause` | **Pause.** Stop the rollout immediately. |
+| **DO** (POST) | `/api/rollouts/:id/resume` | **Resume.** Continue the rollout. |
+| **REMOVE** (DELETE) | `/api/rollouts/:id` | **Cancel.** Stop and delete the rollout. |
+
+---
+
+## 6. Device Interfaces (Internal IoT)
+**Goal:** These are the codes the **ESP32 chips** use to talk to the server. Humans rarely click these.
+
+| Action Type | Command (Endpoint) | What It Does (Simple English) |
+|:--- | :--- | :--- |
+| **READ** (GET) | `/ota/check` | **"Any updates?"** Device asks if there is new software. |
+| **READ** (GET) | `/ota/update` | **"Give me the file."** Device requests the file stream. |
+| **DO** (POST) | `/ota/report` | **"Here is what happened."** Device reports Success/Failure. |
+| **DO** (POST) | `/ota/progress` | **"Downloading..."** Device reports % complete (10%..50%..). |
+| **DO** (POST) | `/ota/heartbeat` | **"I'm alive."** Device sends health stats (Signal, Battery, etc). |
+| **READ** (GET) | `/firmware/:filename` | **Raw Download.** Direct link to the file. |
+
+---
+
+## 7. Analytics & Reports
+**Goal:** See charts and graphs about system performance.
+
+| Action Type | Command (Endpoint) | What It Does (Simple English) |
+|:--- | :--- | :--- |
+| **READ** (GET) | `/api/analytics/deployments`| **Deployment Stats.** Success vs Failure rates for updates. |
+| **READ** (GET) | `/api/analytics/health` | **Health Score.** Overview of device health (0-100%). |
+| **READ** (GET) | `/api/analytics/fleet` | **Fleet Overview.** Summary of all devices by Group/Status. |
+| **READ** (GET) | `/api/analytics/heartbeats/:mac`| **History.** Signal strength history for one device. |
+
+---
+
+## 8. Logs & Audit Trail
+**Goal:** Track what happened and who did what.
+
+| Action Type | Command (Endpoint) | What It Does (Simple English) |
+|:--- | :--- | :--- |
+| **READ** (GET) | `/api/logs` | **Device Logs.** See technical logs from devices (errors/info). |
+| **DO** (POST) | `/api/logs/clear` | **Clear Logs.** data cleanup. |
+| **READ** (GET) | `/api/audit-logs` | **Audit Trail.** "Who did what?" (e.g., User X deleted Device Y). |
+| **READ** (GET) | `/api/audit-logs/export/csv` | **Export CSV.** Download the audit trail for Excel. |
+
+---
+
+## 9. Webhooks (Integration)
+**Goal:** Notify other systems (like Slack/Email) when things happen.
+
+| Action Type | Command (Endpoint) | What It Does (Simple English) |
+|:--- | :--- | :--- |
+| **READ** (GET) | `/api/webhooks` | **List Webhooks.** See all active notifications. |
+| **DO** (POST) | `/api/webhooks` | **Create Webhook.** Add a new notification rule. |
+| **DO** (POST) | `/api/webhooks/:id/test` | **Test Trigger.** Fire a fake event to test connections. |
+
+---
+
+## 10. Device Configurations
+**Goal:** Manage settings bundles (JSON) for devices.
+
+| Action Type | Command (Endpoint) | What It Does (Simple English) |
+|:--- | :--- | :--- |
+| **READ** (GET) | `/api/configs` | **List Configs.** Show saved configuration profiles. |
+| **DO** (POST) | `/api/configs` | **Create Config.** Save a new settings bundle. |
+| **DO** (POST) | `/api/configs/:id/push` | **Push Config.** Send settings to devices immediately. |
+
+---
+
+## 11. Rollback Watchdog
+**Goal:** Automatic safety system for failed updates.
+
+| Action Type | Command (Endpoint) | What It Does (Simple English) |
+|:--- | :--- | :--- |
+| **READ** (GET) | `/api/at-risk` | **View At-Risk.** Show devices that updated but stopped talking (might be broken). |
+| **DO** (POST) | `/api/at-risk/:mac/rollback` | **Force Rollback.** Tell the system to downgrade this broken device next time it connects. |

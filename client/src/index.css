@@ -1,16 +1,16 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* Standard Tailwind v4 Directives - If seeing linting warnings, ensure IDE Tailwind extension is updated to v4 */
+/* Standard Tailwind v4 Directives */
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --font-sans: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: calc(var(--radius));
+  --radius-lg: calc(var(--radius) + 2px);
   --radius-xl: calc(var(--radius) + 4px);
 
   --color-background: hsl(var(--background));
@@ -47,7 +47,6 @@
   --color-chart-4: hsl(var(--chart-4));
   --color-chart-5: hsl(var(--chart-5));
 
-
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
 
@@ -72,337 +71,113 @@
   }
 }
 
-/* INDUSTRIAL TECH THEME - Light Mode Default */
-/* CINEMATIC THEME ENGINE */
+/* NEO-BRUTALISM THEME ENGINE */
 :root {
-  /* LIGHT MODE (Fallback) */
+  /* LIGHT MODE (Primary Neo-Brutalist) */
   --background: 0 0% 100%;
-  --foreground: 222 47% 10%;
-  --card: 0 0% 98%;
-  --card-foreground: 222 47% 10%;
+  /* #FFFFFF */
+  --foreground: 0 0% 0%;
+  /* #000000 */
+
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 0%;
+
   --popover: 0 0% 100%;
-  --popover-foreground: 222 47% 10%;
-  --primary: 222 47% 10%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222 47% 11%;
-  --muted: 210 40% 92%;
-  --muted-foreground: 215 16% 35%;
-  /* Darker for better contrast */
-  --accent: 210 40% 92%;
-  --accent-foreground: 222 47% 11%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 214.3 31.8% 85%;
-  /* Slightly darker border */
-  --input: 214.3 31.8% 85%;
-  --ring: 222 47% 10%;
+  --popover-foreground: 0 0% 0%;
 
+  --primary: 180 100% 50%;
+  /* Cyan #00FFFF */
+  --primary-foreground: 0 0% 0%;
 
-  /* BRUTALIST GEOMETRY */
-  --radius: 0.15rem;
-  /* Sharp, aggressive corners */
+  --secondary: 300 100% 50%;
+  /* Magenta #FF00FF */
+  --secondary-foreground: 0 0% 0%;
+
+  --muted: 60 100% 50%;
+  /* Yellow #FFFF00 */
+  --muted-foreground: 0 0% 0%;
+
+  --accent: 120 100% 50%;
+  /* Green #00FF00 */
+  --accent-foreground: 0 0% 0%;
+
+  --destructive: 0 100% 50%;
+  /* Red #FF0000 */
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 0 0% 0%;
+  /* Black Borders */
+  --input: 0 0% 100%;
+  --ring: 0 0% 0%;
+  /* Black Focus Rings */
+
+  --radius: 0px;
+  /* Sharp corners */
+
+  --shadow-strength: 4px;
 }
 
 .dark {
-  /* CINEMATIC BRUTALISM MODE - WAR ROOM AESTHETIC */
-  /* Base - Void Black */
-  --background: 240 10% 3%;
-  /* Almost pure black #070708 */
-  --foreground: 210 40% 98%;
+  /* DARK MODE (Cyber-Brutalism) */
+  --background: 0 0% 5%;
+  /* #0d0d0d */
+  --foreground: 0 0% 100%;
+  /* #FFFFFF */
 
-  /* Tech Surfaces - High Opsacity Glass */
-  --card: 240 10% 5%;
-  /* darker card background */
-  --card-foreground: 210 40% 98%;
+  --card: 0 0% 0%;
+  --card-foreground: 0 0% 100%;
 
-  --popover: 240 10% 5%;
-  --popover-foreground: 210 40% 98%;
+  --popover: 0 0% 0%;
+  --popover-foreground: 0 0% 100%;
 
-  /* Aggressive Neon Palette */
   --primary: 180 100% 50%;
-  /* Electric Cyan #00FFFF */
-  --primary-foreground: 240 10% 3%;
+  /* Cyan */
+  --primary-foreground: 0 0% 0%;
 
-  --secondary: 270 100% 60%;
-  /* Deep Voltage Purple */
-  --secondary-foreground: 210 40% 98%;
+  --secondary: 300 100% 50%;
+  /* Magenta */
+  --secondary-foreground: 0 0% 0%;
 
-  --muted: 240 5% 15%;
-  --muted-foreground: 240 5% 65%;
+  --muted: 0 0% 20%;
+  --muted-foreground: 0 0% 80%;
 
-  --accent: 240 5% 15%;
-  /* Dark Tech Grey */
-  --accent-foreground: 180 100% 50%;
-  /* Cyan text on accent */
+  --accent: 120 100% 50%;
+  /* Green */
+  --accent-foreground: 0 0% 0%;
 
   --destructive: 0 100% 50%;
-  /* Critical Failure Red */
-  --destructive-foreground: 210 40% 98%;
+  --destructive-foreground: 0 0% 100%;
 
-  --border: 240 5% 20%;
-  --input: 240 5% 20%;
-  --ring: 180 100% 50%;
-
-
-  /* Effects */
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-shine: rgba(255, 255, 255, 0.05);
-  --neon-glow: 0 0 20px rgba(0, 255, 255, 0.4), 0 0 40px rgba(0, 255, 255, 0.2);
+  --border: 0 0% 100%;
+  /* White Borders */
+  --input: 0 0% 10%;
+  --ring: 0 0% 100%;
 }
 
 @layer utilities {
-  .glassmorphism {
-    @apply border-border/50 bg-background/50 backdrop-blur-md;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    will-change: transform, opacity;
-    transform: translateZ(0);
-    /* Trigger GPU acceleration */
+  .neo-border {
+    border: 3px solid hsl(var(--border));
   }
 
-  .dark .glassmorphism {
-    @apply border-white/10 bg-white/5;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  .neo-shadow {
+    box-shadow: var(--shadow-strength) var(--shadow-strength) 0px 0px hsl(var(--border));
   }
 
-  .tech-border {
-    @apply border-border/50 relative;
+  .neo-shadow-hover:hover {
+    box-shadow: calc(var(--shadow-strength) + 2px) calc(var(--shadow-strength) + 2px) 0px 0px hsl(var(--border));
+    transform: translate(-2px, -2px);
+    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   }
 
-  .tech-border::after {
-    content: '';
-    position: absolute;
-    top: -1px;
-    left: -1px;
-    width: 6px;
-    height: 6px;
-    border-top: 1px solid var(--primary);
-    border-left: 1px solid var(--primary);
-    transition: all 0.3s ease;
+  .neo-shadow-active:active {
+    box-shadow: 0px 0px 0px 0px hsl(var(--border));
+    transform: translate(var(--shadow-strength), var(--shadow-strength));
   }
 
-  .tech-border::before {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    right: -1px;
-    width: 6px;
-    height: 6px;
-    border-bottom: 1px solid var(--primary);
-    border-right: 1px solid var(--primary);
-    transition: all 0.3s ease;
-  }
-
-  /* Scanline effect - behind UI interactions but over bg */
-  .scanline {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    pointer-events: none;
-    z-index: 40;
-    opacity: 0.03;
-    background: linear-gradient(to bottom, transparent 50%, #000 50%);
-    background-size: 100% 4px;
-    will-change: transform;
-    animation: scanline 4s steps(30) infinite;
-  }
-
-  .main-content-area {
-    content-visibility: auto;
-    contain-intrinsic-size: 1000px;
-  }
-
-  /* Vignette + Noise - behind UI */
-  .cinematic-vignette {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    background: radial-gradient(circle at center, transparent 30%, rgba(0, 0, 0, 0.6) 100%);
-    z-index: 30;
-  }
-
-  /* Glitch Effect */
-  .glitch-effect {
+  /* Glitch Text Effect - STATIC */
+  .glitch {
     position: relative;
-    will-change: transform;
-    animation: glitch-skew 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
-  }
-
-  .glitch-effect::before,
-  .glitch-effect::after {
-    content: attr(data-text);
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0.8;
-  }
-
-  .glitch-effect::before {
-    left: 2px;
-    text-shadow: -2px 0 #ff00c1;
-    clip: rect(44px, 450px, 56px, 0);
-    animation: glitch-anim 5s infinite linear alternate-reverse;
-  }
-
-  .glitch-effect::after {
-    left: -2px;
-    text-shadow: -2px 0 #00fff9;
-    clip: rect(44px, 450px, 56px, 0);
-    animation: glitch-anim2 5s infinite linear alternate-reverse;
-  }
-
-  .loader {
-    width: 20px;
-    aspect-ratio: 1;
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    border-radius: 6px;
-    box-shadow: 0 0 60px 15px rgba(255, 255, 255, 0.25);
-    clip-path: inset(0);
-    animation: loader-pulse 0.5s ease-in-out infinite alternate, loader-clip 1s ease-in-out infinite;
-  }
-
-  @keyframes loader-pulse {
-    0% {
-      opacity: 0.5;
-      transform: scale(0.9);
-    }
-
-    100% {
-      opacity: 1;
-      transform: scale(1.1);
-    }
-  }
-
-  @keyframes loader-clip {
-    33% {
-      clip-path: inset(0 0 0 0);
-    }
-
-    50% {
-      clip-path: inset(0 0 100% 0);
-    }
-
-    83% {
-      clip-path: inset(0 0 0 0);
-    }
-  }
-
-  .scroll-optimize {
-    content-visibility: auto;
-    contain-intrinsic-size: 100px;
-  }
-
-  /* Keyframes */
-  @keyframes scanline {
-    0% {
-      transform: translateY(0);
-    }
-
-    100% {
-      transform: translateY(4px);
-    }
-  }
-
-  @keyframes glitch-anim {
-    0% {
-      clip: rect(33px, 9999px, 11px, 0);
-    }
-
-    20% {
-      clip: rect(87px, 9999px, 96px, 0);
-    }
-
-    40% {
-      clip: rect(15px, 9999px, 3px, 0);
-    }
-
-    60% {
-      clip: rect(63px, 9999px, 18px, 0);
-    }
-
-    80% {
-      clip: rect(4px, 9999px, 66px, 0);
-    }
-
-    100% {
-      clip: rect(78px, 9999px, 93px, 0);
-    }
-  }
-
-  @keyframes glitch-anim2 {
-    0% {
-      clip: rect(2px, 9999px, 86px, 0);
-    }
-
-    20% {
-      clip: rect(60px, 9999px, 6px, 0);
-    }
-
-    40% {
-      clip: rect(44px, 9999px, 37px, 0);
-    }
-
-    60% {
-      clip: rect(21px, 9999px, 78px, 0);
-    }
-
-    80% {
-      clip: rect(98px, 9999px, 14px, 0);
-    }
-
-    100% {
-      clip: rect(35px, 9999px, 51px, 0);
-    }
-  }
-
-  @keyframes glitch-skew {
-    0% {
-      transform: skew(0deg);
-    }
-
-    10% {
-      transform: skew(-1deg);
-    }
-
-    20% {
-      transform: skew(1deg);
-    }
-
-    30% {
-      transform: skew(0deg);
-    }
-
-    100% {
-      transform: skew(0deg);
-    }
-  }
-
-  @keyframes l4-1 {
-    100% {
-      transform: translateX(80px);
-    }
-  }
-
-  @keyframes l4-2 {
-    33% {
-      clip-path: inset(0 0 0 -100px);
-    }
-
-    50% {
-      clip-path: inset(0 0 0 0);
-    }
-
-    83% {
-      clip-path: inset(0 -100px 0 0);
-    }
+    font-weight: 900;
   }
 }
 
@@ -413,97 +188,40 @@
 
   html,
   body {
-    @apply bg-slate-950;
+    @apply bg-background text-foreground;
+    font-family: var(--font-mono), var(--font-sans);
   }
 
-  body {
-    @apply font-sans antialiased text-foreground min-h-screen;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-black tracking-tighter uppercase;
+  }
+
+  /* TOAST OVERRIDES */
+  /* Ensure Toast Close Button is visible and styled */
+  [data-sonner-toast] [data-close-button] {
     background: transparent !important;
-  }
-}
-
-/* Light theme override */
-.light-theme {
-  --background: 210 20% 98%;
-  --foreground: 222 47% 12%;
-
-  --card: 0 0% 100% / 0.8;
-  --card-foreground: 222 47% 12%;
-
-  --popover: 0 0% 100% / 0.95;
-  --popover-foreground: 222 47% 12%;
-
-  --primary: 222 40% 20%;
-  /* Softened from pitch black for better balance */
-  --primary-foreground: 0 0% 100%;
-
-  --secondary: 210 20% 96%;
-  --secondary-foreground: 222 47% 12%;
-
-  --muted: 210 20% 96%;
-  --muted-foreground: 215 16% 40%;
-  /* Slightly darker for better contrast */
-
-  --accent: 217 91% 60%;
-  --accent-foreground: 0 0% 100%;
-
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 100%;
-
-  --border: 214 32% 85%;
-  /* Slightly more visible border */
-  --input: 214 32% 85%;
-  --ring: 217 91% 60%;
-
-}
-
-.light-theme .text-white {
-  color: hsl(222 47% 11%) !important;
-}
-
-.light-theme .text-white\/60,
-.light-theme .text-white\/40,
-.light-theme .text-white\/50 {
-  color: hsl(215 16% 47%) !important;
-}
-
-.light-theme .bg-white\/5,
-.light-theme .bg-white\/10,
-.light-theme .bg-white\/15 {
-  background-color: hsl(210 20% 96%) !important;
-}
-
-.light-theme .border-white\/10,
-.light-theme .border-white\/20 {
-  border-color: hsl(214 32% 91%) !important;
-}
-
-@layer utilities {
-  .animate-pulse-slow {
-    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    border: 2px solid currentColor !important;
+    color: currentColor !important;
+    border-radius: 0 !important;
+    top: 0.5rem !important;
+    right: 0.5rem !important;
+    width: 20px !important;
+    height: 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 14px !important;
   }
 
-  @keyframes shake {
-
-    0%,
-    100% {
-      transform: translateX(0);
-    }
-
-    25% {
-      transform: translateX(-5px);
-    }
-
-    50% {
-      transform: translateX(5px);
-    }
-
-    75% {
-      transform: translateX(-5px);
-    }
-  }
-
-  .animate-shake {
-    animation: shake 0.4s cubic-bezier(.36, .07, .19, .97) both;
+  /* Override generic sonner styles to enforce brute theme */
+  [data-sonner-toast] {
+    border-radius: 0px !important;
+    font-family: var(--font-mono) !important;
+    text-transform: uppercase !important;
   }
 }
