@@ -12,15 +12,15 @@ export default defineConfig({
     tailwindcss(),
     metaImagesPlugin(),
     ...(process.env.NODE_ENV !== "production" &&
-    process.env.REPL_ID !== undefined
+      process.env.REPL_ID !== undefined
       ? [
-          await import("@replit/vite-plugin-cartographer").then((m) =>
-            m.cartographer(),
-          ),
-          await import("@replit/vite-plugin-dev-banner").then((m) =>
-            m.devBanner(),
-          ),
-        ]
+        await import("@replit/vite-plugin-cartographer").then((m) =>
+          m.cartographer(),
+        ),
+        await import("@replit/vite-plugin-dev-banner").then((m) =>
+          m.devBanner(),
+        ),
+      ]
       : []),
   ],
   resolve: {
@@ -57,7 +57,7 @@ export default defineConfig({
           if (id.includes('node_modules/leaflet/')) {
             return 'vendor-maps';
           }
-          
+
           // PDF generation - lazy loaded, split separately
           if (id.includes('node_modules/jspdf/')) {
             return 'vendor-jspdf';
@@ -65,29 +65,29 @@ export default defineConfig({
           if (id.includes('node_modules/html2canvas/')) {
             return 'vendor-html2canvas';
           }
-          
+
           // Charts (recharts + d3) - large, often lazy loaded
-          if (id.includes('node_modules/recharts/') || 
-              id.includes('node_modules/d3-')) {
+          if (id.includes('node_modules/recharts/') ||
+            id.includes('node_modules/d3-')) {
             return 'vendor-charts';
           }
-          
+
           // Radix UI components
           if (id.includes('node_modules/@radix-ui/')) {
             return 'vendor-radix';
           }
-          
+
           // React Query
           if (id.includes('node_modules/@tanstack/')) {
             return 'vendor-query';
           }
-          
+
           // Form handling
-          if (id.includes('node_modules/react-hook-form/') || 
-              id.includes('node_modules/@hookform/')) {
+          if (id.includes('node_modules/react-hook-form/') ||
+            id.includes('node_modules/@hookform/')) {
             return 'vendor-forms';
           }
-          
+
           // Zod validation (used on both client and shared)
           if (id.includes('node_modules/zod/')) {
             return 'vendor-zod';
@@ -106,10 +106,13 @@ export default defineConfig({
     allowedHosts: true,
     hmr: process.env.REPL_ID
       ? {
-          protocol: "wss",
-          clientPort: 443,
-        }
-      : true,
+        protocol: "wss",
+        clientPort: 443,
+      }
+      : {
+        protocol: "ws",
+        clientPort: parseInt(process.env.PORT || "5000", 10),
+      },
     fs: {
       strict: true,
       deny: ["**/.*"],
